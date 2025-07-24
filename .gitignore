@@ -1,0 +1,27 @@
+# Cache directories
+.cache/
+
+# AI assistant files
+CLAUDE.md
+.mcp.json
+docs/instructions_claude.md
+
+# Configuration presets (may contain sensitive info)
+preset.conf
+
+# Temporary files
+/tmp/nixos_dotfiles_path
+
+# Build artifacts
+result
+result-*
+
+# Editor files
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -10,10 +10,13 @@ in
     ./modules/home/git.nix
     ./modules/home/zsh.nix
     ./modules/packages/home/core.nix
-    ./modules/packages/home/development.nix
-    ./modules/packages/home/media.nix
-    ./modules/packages/home/gaming.nix
     ./modules/packages/home/desktop.nix
+  ] ++ lib.optionals vars.features.packages.development.enable [
+    ./modules/packages/home/development.nix
+  ] ++ lib.optionals vars.features.packages.media.enable [
+    ./modules/packages/home/media.nix
+  ] ++ lib.optionals vars.features.packages.gaming.enable [
+    ./modules/packages/home/gaming.nix
   ];
 
   home.username = vars.username;

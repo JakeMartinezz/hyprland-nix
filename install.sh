@@ -29,6 +29,35 @@ fi
 # Get script directory to find language files
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Load configuration variables
+VARIABLES_FILE="${SCRIPT_DIR}/variables.sh"
+if [[ -f "$VARIABLES_FILE" ]]; then
+    echo -e "${BLUE}🔧 Carregando configurações customizadas...${NC}"
+    source "$VARIABLES_FILE"
+else
+    echo -e "${YELLOW}⚠️ Usando configurações padrão (variables.sh não encontrado)${NC}"
+    # Definir valores padrão inline se variables.sh não existir
+    DOTFILES_REPO_URL="https://github.com/JakeMartinezz/hyprdots-nix"
+    DOTFILES_BRANCH="main"
+    NIXOS_CONFIG_PATH="/etc/nixos"
+    MOUNT_POINT_PREFIX="/mnt"
+    BACKUP_DIR_PREFIX="/etc/nixos.backup"
+    DEFAULT_USERNAME="${USER:-jake}"
+    DEFAULT_HOSTNAME="${HOSTNAME:-nixos}"
+    DEFAULT_USER_DESCRIPTION="NixOS User"
+    NETWORK_TIMEOUT=30
+    MAX_RETRY_ATTEMPTS=3
+    PRESET_FILENAME="preset.conf"
+    DEFAULT_LANGUAGE="pt"
+    DEFAULT_LOCALE="pt_BR.UTF-8"
+    DEFAULT_TIMEZONE="America/Sao_Paulo"
+    DEFAULT_MOUNT_OPTIONS="defaults,x-gvfs-show"
+    MIN_FREE_SPACE_MB=2048
+    INSTALLER_TITLE="NixOS Configuration Installer"
+    WELCOME_MESSAGE="Bem-vindo ao instalador inteligente do NixOS!"
+    SUCCESS_MESSAGE="Instalação concluída com sucesso!"
+fi
+
 # Load language strings from external files
 if [[ "$LANG" == "pt_BR.UTF-8" ]]; then
     # Load Portuguese strings
@@ -363,7 +392,7 @@ relocate_dotfiles() {
 }
 
 download_dotfiles() {
-    local repo_url="https://github.com/JakeMartinezz/hyprdots-nix"
+    local repo_url="$DOTFILES_REPO_URL"
     local dotfiles_path="$1"
     
     echo -e "${BLUE}$MSG_DOTFILES_DOWNLOADING${NC}"
@@ -767,7 +796,7 @@ dotfiles_location=""
 
 # Configuration preset file (in script directory)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PRESET_FILE="$SCRIPT_DIR/preset.conf"
+PRESET_FILE="$SCRIPT_DIR/$PRESET_FILENAME"
 
 # Function to save configuration preset
 save_config_preset() {
@@ -1041,7 +1070,7 @@ display_disk_info() {
 
 # Helper function to get mount options from user
 get_mount_options() {
-    local default_options="defaults,x-gvfs-show"
+    local default_options="$DEFAULT_MOUNT_OPTIONS"
     
     echo >&2
     echo -e "${YELLOW}$MSG_MOUNT_OPTIONS_DISK${NC}" >&2
@@ -1091,9 +1120,9 @@ get_default_mount_point() {
     if [[ -n "$label" ]]; then
         # Convert label to lowercase and replace spaces/special chars with dashes
         local sanitized_label=$(echo "$label" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
-        echo "/mnt/$sanitized_label"
+        echo "$MOUNT_POINT_PREFIX/$sanitized_label"
     else
-        echo "/mnt/disco$disk_index"
+        echo "$MOUNT_POINT_PREFIX/disco$disk_index"
     fi
 }
 
@@ -1210,8 +1239,10 @@ collect_config() {
     validate_system_requirements
     
     # Collect basic system info
-    read -p "$MSG_USERNAME: " username
-    read -p "$MSG_HOSTNAME: " hostname
+    read -p "$MSG_USERNAME [$DEFAULT_USERNAME]: " username
+    username="${username:-$DEFAULT_USERNAME}"
+    read -p "$MSG_HOSTNAME [$DEFAULT_HOSTNAME]: " hostname
+    hostname="${hostname:-$DEFAULT_HOSTNAME}"
 
     # GPU Detection
     echo -e "${BLUE}$MSG_GPU_DETECTION${NC}"
@@ -1451,7 +1482,7 @@ fi)
   # Paths and directories
   paths = {
     # NixOS configuration path
-    configPath = "/etc/nixos";
+    configPath = "$NIXOS_CONFIG_PATH";
   };
   
   # Build and performance settings
@@ -1489,9 +1520,9 @@ do_backup=$(ask_yes_no "$MSG_BACKUP_ASK" "y")
 if [[ "$do_backup" == "true" ]]; then
     echo -e "${BLUE}$MSG_BACKUP_CURRENT${NC}"
     
-    if [ -d "/etc/nixos" ]; then
-        backup_dir="/etc/nixos.backup.$(date +%Y%m%d_%H%M%S)"
-        sudo cp -r /etc/nixos "$backup_dir"
+    if [ -d "$NIXOS_CONFIG_PATH" ]; then
+        backup_dir="${BACKUP_DIR_PREFIX}.$(date +%Y%m%d_%H%M%S)"
+        sudo cp -r "$NIXOS_CONFIG_PATH" "$backup_dir"
         echo -e "${GREEN}$MSG_BACKUP_CREATED $backup_dir${NC}"
     else
         echo -e "${YELLOW}$MSG_NO_BACKUP_FOUND${NC}"
@@ -1522,15 +1553,15 @@ cp -r nixos/lib/* "$TEMP_DIR/lib/" 2>/dev/null || true
 cp -r nixos/modules/* "$TEMP_DIR/modules/" 2>/dev/null || true
 
 # Clean and copy new configuration
-sudo rm -rf /etc/nixos/*
-sudo cp -r "$TEMP_DIR/"* /etc/nixos/
-sudo chown -R root:root /etc/nixos
+sudo rm -rf $NIXOS_CONFIG_PATH/*
+sudo cp -r "$TEMP_DIR/"* $NIXOS_CONFIG_PATH/
+sudo chown -R root:root $NIXOS_CONFIG_PATH
 
 echo -e "${GREEN}$MSG_FILES_COPIED${NC}"
 
 # Move the generated variables.nix to correct location
-sudo mv /tmp/variables.nix /etc/nixos/config/variables.nix
-sudo chown root:root /etc/nixos/config/variables.nix
+sudo mv /tmp/variables.nix $NIXOS_CONFIG_PATH/config/variables.nix
+sudo chown root:root $NIXOS_CONFIG_PATH/config/variables.nix
 
 # Generate hardware configuration for current system
 echo -e "${BLUE}$MSG_GENERATING_HW${NC}"
@@ -1550,7 +1581,7 @@ do_rebuild=$(ask_yes_no "$MSG_REBUILD_ASK" "n")
 
 if [[ "$do_rebuild" == "true" ]]; then
     echo -e "${BLUE}$MSG_REBUILDING${NC}"
-    if sudo nixos-rebuild switch --flake /etc/nixos#default; then
+    if sudo nixos-rebuild switch --flake $NIXOS_CONFIG_PATH#default; then
         echo -e "${GREEN}$MSG_REBUILD_SUCCESS${NC}"
         rebuild_success="true"
         

@@ -65,6 +65,7 @@ nixos/
 ├── ⚙️ configuration.nix           # Configuração principal do sistema
 ├── 🏠 home.nix                    # Configuração principal do Home Manager
 ├── 🚀 install.sh                  # Instalador inteligente e interativo
+├── ⚙️ variables.sh                # Configurações customizáveis do instalador
 └── 📋 preset.conf                 # Configuração salva (gerado automaticamente)
 ```
 
@@ -225,6 +226,55 @@ clean   → GC + optimization + backup para ${backupPath}
 # Ativado via features.services.fauxmo.enable = true
 # Firewall configurado automaticamente via features.services.fauxmo.ports
 # IP detectado automaticamente na inicialização do serviço
+```
+
+## ⚙️ Sistema de Configuração Customizável (variables.sh)
+
+Esta configuração inclui um sistema inovador de personalização através do arquivo `variables.sh`, que permite customizar o comportamento do instalador sem modificar o código principal.
+
+### **🔧 Configurações Disponíveis**
+
+O arquivo `variables.sh` permite personalizar:
+
+```bash
+# Repositórios e URLs
+DOTFILES_REPO_URL="https://github.com/SeuUsuario/seu-repo"
+DOTFILES_BRANCH="main"
+
+# Paths do sistema
+NIXOS_CONFIG_PATH="/etc/nixos"              # Diretório de configuração
+MOUNT_POINT_PREFIX="/mnt"                   # Prefixo para pontos de montagem
+BACKUP_DIR_PREFIX="/etc/nixos.backup"       # Diretório para backups
+
+# Configurações padrão
+DEFAULT_USERNAME="${USER:-jake}"            # Username padrão
+DEFAULT_HOSTNAME="${HOSTNAME:-nixos}"       # Hostname padrão
+
+# Configurações técnicas
+DEFAULT_MOUNT_OPTIONS="defaults,x-gvfs-show"  # Opções de montagem
+MIN_FREE_SPACE_MB=2048                         # Espaço mínimo necessário
+NETWORK_TIMEOUT=30                             # Timeout para operações de rede
+```
+
+### **✨ Benefícios do Sistema**
+
+- **🎯 Personalização Fácil**: Edite apenas um arquivo para customizar o instalador
+- **🔄 Backward Compatibility**: Funciona com ou sem `variables.sh`
+- **🛡️ Segurança**: Valores padrão garantem funcionamento mesmo sem customização
+- **📦 Portabilidade**: Configurações separadas do código principal
+- **🚀 Manutenibilidade**: Updates no instalador não afetam suas customizações
+
+### **📝 Como Usar**
+
+1. **Personalizar (Opcional)**: Edite o arquivo `variables.sh` com suas preferências
+2. **Executar Instalador**: O script detecta automaticamente suas configurações
+3. **Backup Automático**: Suas customizações são preservadas em updates
+
+```bash
+# Exemplo de uso
+cp variables.sh variables.sh.backup  # Backup das suas configurações
+# Editar variables.sh conforme necessário
+./install.sh  # O instalador usa suas configurações automaticamente
 ```
 
 ## 🚀 Início Rápido

@@ -1603,6 +1603,29 @@ else
 fi
 
 # Show comprehensive installation summary
+show_installation_summary() {
+    echo
+    echo -e "${BLUE}═══════════════════════════════════════${NC}"
+    echo -e "${BLUE}         RESUMO DA INSTALAÇÃO           ${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════${NC}"
+    echo
+    echo -e "${GREEN}✅ Configuração aplicada com sucesso!${NC}"
+    echo -e "   ${CYAN}• Username:${NC} $username"
+    echo -e "   ${CYAN}• Hostname:${NC} $hostname" 
+    echo -e "   ${CYAN}• GPU:${NC} $gpu_type"
+    echo -e "   ${CYAN}• Configuração:${NC} $NIXOS_CONFIG_PATH"
+    
+    if [[ "$rebuild_success" == "true" ]]; then
+        echo -e "   ${GREEN}• Sistema reconstruído com sucesso${NC}"
+    else
+        echo -e "   ${YELLOW}• Sistema não foi reconstruído${NC}"
+    fi
+    
+    echo
+    echo -e "${BLUE}═══════════════════════════════════════${NC}"
+    echo
+}
+
 show_installation_summary
 
 echo -e "${GREEN}$MSG_COMPLETE${NC}"

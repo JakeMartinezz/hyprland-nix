@@ -13,14 +13,22 @@ in
       ./modules/system/services.nix
       ./modules/system/boot.nix
       ./modules/system/gpu.nix
-      ./modules/system/bluetooth.nix
-      ./modules/system/conditional-services.nix
       ./modules/system/filesystems.nix
       ./modules/packages/system/core.nix
       ./modules/packages/system/desktop.nix
-      ./modules/packages/system/gaming.nix
-      ./modules/packages/system/media.nix
+    ] ++ lib.optionals vars.features.bluetooth.enable [
+      ./modules/system/bluetooth.nix
+    ] ++ lib.optionals vars.features.laptop.enable [
       ./modules/packages/system/laptop.nix
+    ] ++ lib.optionals (vars.features.services.virtualbox.enable || 
+                        vars.features.services.fauxmo.enable || 
+                        vars.features.services.polkit_gnome.enable ||
+                        vars.features.network.wakeOnLan.enable) [
+      ./modules/system/conditional-services.nix
+    ] ++ lib.optionals vars.features.packages.gaming.enable [
+      ./modules/packages/system/gaming.nix
+    ] ++ lib.optionals vars.features.packages.media.enable [
+      ./modules/packages/system/media.nix
     ];
 
 

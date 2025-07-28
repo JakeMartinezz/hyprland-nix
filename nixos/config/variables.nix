@@ -67,6 +67,11 @@
       };
     };
     
+    # GTK Theme configuration  
+    gtk = {
+      theme = "catppuccin"; # "catppuccin" | "gruvbox" | "gruvbox-material"
+    };
+    
     # Services and integrations
     services = {
       # Fauxmo
@@ -83,6 +88,13 @@
       # Polkit GNOME
       polkit_gnome = {
         enable = false;
+      };
+      
+      # Garbage collection
+      gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 7d";
       };
     };
     
@@ -125,13 +137,4 @@
     autoOptimiseStore = true;
   };
   
-  # Services and programs
-  services = {
-    # Garbage collection
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 7d";
-    };
-  };
 }

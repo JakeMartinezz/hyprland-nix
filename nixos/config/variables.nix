@@ -67,9 +67,9 @@
       };
     };
     
-    # GTK Theme configuration  
+    # GTK Theme configuration
     gtk = {
-      theme = "catppuccin"; # "catppuccin" | "gruvbox" | "gruvbox-material"
+      theme = "gruvbox";
     };
     
     # Services and integrations
@@ -77,7 +77,7 @@
       # Fauxmo
       fauxmo = {
         enable = true;
-        ports = [ 52002 3009 ]; # TCP ports to open for Fauxmo service
+        ports = [ 52002 ]; # TCP ports to open for Fauxmo service
       };
       
       # VirtualBox

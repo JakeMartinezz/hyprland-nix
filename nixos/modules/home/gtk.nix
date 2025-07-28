@@ -1,6 +1,30 @@
 { config, pkgs, ... }:
 
 let
+  vars = import ../../config/variables.nix;
+  currentTheme = vars.features.gtk.theme;
+  
+  # Theme configurations
+  themeConfigs = {
+    catppuccin = {
+      package = pkgs.catppuccin-gtk.override {
+        accents = [ "lavender" ];
+        variant = "mocha";
+      };
+      name = "catppuccin-mocha-lavender-standard";
+    };
+    gruvbox = {
+      package = pkgs.gruvbox-gtk-theme;
+      name = "Gruvbox-Dark";
+    };
+    gruvbox-material = {
+      package = pkgs.gruvbox-material-gtk-theme;
+      name = "Gruvbox-Material-Dark";
+    };
+  };
+  
+  selectedTheme = themeConfigs.${currentTheme};
+  
   windowsCursorsGithub = pkgs.stdenv.mkDerivation {
     pname = "windows-cursors-github";
     version = "1.0";
@@ -20,11 +44,8 @@ in
   gtk = {
     enable = true;
     theme = {
-      package = pkgs.catppuccin-gtk.override {
-        accents = [ "lavender" ];
-        variant = "mocha";
-      };
-      name = "catppuccin-mocha-lavender-standard";
+      package = selectedTheme.package;
+      name = selectedTheme.name;
     };
     iconTheme = {
       name = "Tela-dracula";

@@ -27,6 +27,8 @@ MSG_MEDIA="Instalar aplicações de mídia?"
 MSG_VIRTUALBOX="Ativar VirtualBox?"
 MSG_POLKIT="Ativar autenticação gráfica (Polkit GNOME)?"
 MSG_FAUXMO="Ativar integração com Alexa (Fauxmo)?"
+MSG_THEME_SELECTION="🎨 Seleção de Tema GTK"
+MSG_THEME="Escolha seu tema GTK:"
 MSG_DISK="UUID do disco adicional (opcional, Enter para pular)"
 MSG_MOUNT="Ponto de montagem para o disco"
 

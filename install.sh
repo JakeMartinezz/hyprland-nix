@@ -813,6 +813,7 @@ save_config_preset() {
     echo "virtualbox_enable=$virtualbox_enable" >> "$PRESET_FILE"
     echo "polkit_enable=$polkit_enable" >> "$PRESET_FILE"
     echo "fauxmo_enable=$fauxmo_enable" >> "$PRESET_FILE"
+    echo "gtk_theme=$gtk_theme" >> "$PRESET_FILE"
     echo "dotfiles_enabled=$dotfiles_enabled" >> "$PRESET_FILE"
     echo "dotfiles_location=$dotfiles_location" >> "$PRESET_FILE"
     
@@ -831,6 +832,18 @@ validate_gpu_type() {
         echo -e "${YELLOW}$MSG_VALID_GPU_VALUES${NC}"
         
         gpu_type=$(ask_choice "$MSG_GPU" "amd" "nvidia" "intel")
+        return 0  # indicates error was found and fixed
+    fi
+    return 1  # indicates no error
+}
+
+# Helper function to validate and fix GTK theme
+validate_gtk_theme() {
+    if [[ "$gtk_theme" != "catppuccin" && "$gtk_theme" != "gruvbox" && "$gtk_theme" != "gruvbox-material" ]]; then
+        echo -e "${RED}❌ Invalid GTK theme: '$gtk_theme'${NC}"
+        echo -e "${YELLOW}Valid values: catppuccin, gruvbox, gruvbox-material${NC}"
+        
+        gtk_theme=$(ask_choice "$MSG_THEME" "catppuccin" "gruvbox" "gruvbox-material")
         return 0  # indicates error was found and fixed
     fi
     return 1  # indicates no error
@@ -923,6 +936,7 @@ validate_and_fix_preset_config() {
     
     # Validate and fix each component
     validate_gpu_type && has_errors=true
+    validate_gtk_theme && has_errors=true
     validate_boolean_values && has_errors=true
     validate_username && has_errors=true
     validate_hostname && has_errors=true
@@ -1279,6 +1293,24 @@ collect_config() {
     virtualbox_enable=$(ask_yes_no "$MSG_VIRTUALBOX")
     polkit_enable=$(ask_yes_no "$MSG_POLKIT" "y")
     fauxmo_enable=$(ask_yes_no "$MSG_FAUXMO")
+    
+    # GTK Theme Selection
+    echo
+    echo -e "${BLUE}$MSG_THEME_SELECTION${NC}"
+    echo -e "${YELLOW}$MSG_THEME${NC}"
+    echo "  1) catppuccin"
+    echo "  2) gruvbox"
+    echo "  3) gruvbox-material"
+    
+    while true; do
+        read -p "$MSG_CHOICE_PROMPT " choice
+        case $choice in
+            1) gtk_theme="catppuccin"; break ;;
+            2) gtk_theme="gruvbox"; break ;;
+            3) gtk_theme="gruvbox-material"; break ;;
+            *) echo -e "${RED}$MSG_INVALID_CHOICE${NC}" ;;
+        esac
+    done
 
     # Detect and configure additional disks
     detect_additional_disks
@@ -1303,6 +1335,7 @@ show_config_review() {
     echo -e "  ${YELLOW}VirtualBox:${NC} $virtualbox_enable"
     echo -e "  ${YELLOW}Polkit GNOME:${NC} $polkit_enable"
     echo -e "  ${YELLOW}Fauxmo/Alexa:${NC} $fauxmo_enable"
+    echo -e "  ${YELLOW}GTK Theme:${NC} $gtk_theme"
     echo -e "  ${YELLOW}$MSG_DOTFILES_ENABLED${NC} $dotfiles_enabled"
     if [[ "$dotfiles_enabled" == "true" && -n "$dotfiles_location" ]]; then
         echo -e "  ${YELLOW}$MSG_DOTFILES_LOCATION_DISPLAY${NC} $dotfiles_location"
@@ -1438,6 +1471,11 @@ cat > /tmp/variables.nix << EOF
       media = {
         enable = $media_enable;
       };
+    };
+    
+    # GTK Theme configuration
+    gtk = {
+      theme = "$gtk_theme";
     };
     
     # Services and integrations

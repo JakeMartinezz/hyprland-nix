@@ -34,6 +34,13 @@ in
 
    environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
+    GTK_THEME = let
+      themeNames = {
+        catppuccin = "catppuccin-mocha-lavender-standard";
+        gruvbox = "Gruvbox-Dark";
+        gruvbox-material = "Gruvbox-Material-Dark";
+      };
+    in themeNames.${vars.features.gtk.theme};
   };
  
   nixpkgs.config.allowUnfree = true;
@@ -85,9 +92,9 @@ in
   };
 
   nix.gc = {
-    automatic = vars.services.gc.automatic;
-    dates = vars.services.gc.dates;
-    options = vars.services.gc.options;
+    automatic = vars.features.services.gc.automatic;
+    dates = vars.features.services.gc.dates;
+    options = vars.features.services.gc.options;
   };
 
 }

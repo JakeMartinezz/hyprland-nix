@@ -1495,6 +1495,13 @@ cat > /tmp/variables.nix << EOF
       polkit_gnome = {
         enable = $polkit_enable;
       };
+      
+      # Garbage collection
+      gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 7d";
+      };
     };
     
     # Network features
@@ -1535,15 +1542,6 @@ fi)
     autoOptimiseStore = true;
   };
   
-  # Services and programs
-  services = {
-    # Garbage collection
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 7d";
-    };
-  };
 }
 EOF
 

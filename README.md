@@ -100,6 +100,13 @@ nixos/
       amd.enable = true;
     };
     laptop.enable = false; # Desktop mode
+    
+    # Theme Configuration
+    gtk = {
+      theme = "gruvbox";              # "catppuccin" | "gruvbox" | "gruvbox-material"
+      icon = "gruvbox-plus-icons";    # "tela-dracula" | "gruvbox-plus-icons"
+    };
+    
     services = {
       fauxmo = {
         enable = true;
@@ -107,6 +114,9 @@ nixos/
       };
       polkit_gnome = {
         enable = true; # GNOME authentication agent
+      };
+      autoUpdate = {
+        enable = false; # Weekly automatic updates (disabled by default)
       };
     };
   };
@@ -203,6 +213,46 @@ home/development.nix: vscode, claude-code, yarn   # Dev-specific tools
 # gaming-on-demand.nix - Intelligent optimization system
 gaming-mode-on  → Applies performance sysctls + CPU governor
 gaming-mode-off → Restores default settings
+```
+
+### **Advanced Gaming Configuration**
+```nix
+# Enhanced gamemode settings with system-level configuration
+programs.gamemode = {
+  enable = true;
+  settings = {
+    general = {
+      renice = 10;              # Higher priority for games
+      inhibit_screensaver = 1;  # Prevent screensaver during gaming
+    };
+  };
+};
+# Steam with Proton-GE compatibility layers
+# Vulkan tools and performance utilities included
+```
+
+### **Dynamic Theme System**
+```nix
+# GTK Theme Selection - Dynamic switching without rebuilds
+gtk = {
+  theme = "gruvbox";              # "catppuccin" | "gruvbox" | "gruvbox-material"
+  icon = "gruvbox-plus-icons";    # "tela-dracula" | "gruvbox-plus-icons"
+};
+# Icon colors automatically applied (gruvbox icons → grey folders)
+# Themes conditionally installed (only selected themes downloaded)
+```
+
+### **Automatic System Updates**
+```nix
+# Optional weekly auto-updates with notifications
+system.autoUpgrade = {
+  enable = true;                  # Controlled via features.services.autoUpdate.enable
+  flake = inputs.self.outPath;
+  flags = [ "--update-input" "nixpkgs" "--commit-lock-file" ];
+  dates = "weekly";
+  allowReboot = false;            # Safe: no automatic reboots
+};
+# 5-minute notification before updates via libnotify
 ```
 
 ### **Custom Scripts**

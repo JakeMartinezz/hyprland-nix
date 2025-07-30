@@ -1019,6 +1019,9 @@ show_basic_config() {
     echo -e "  ${YELLOW}VirtualBox:${NC} $virtualbox_enable"
     echo -e "  ${YELLOW}Polkit GNOME:${NC} $polkit_enable"
     echo -e "  ${YELLOW}Fauxmo/Alexa:${NC} $fauxmo_enable"
+    echo -e "  ${YELLOW}GTK Theme:${NC} $gtk_theme"
+    echo -e "  ${YELLOW}Icon Theme:${NC} $gtk_icon"
+    echo -e "  ${YELLOW}Auto Updates:${NC} $auto_update_enable"
 }
 
 # Helper function to parse and display disk details

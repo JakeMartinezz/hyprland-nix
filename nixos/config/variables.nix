@@ -97,6 +97,11 @@
         dates = "weekly";
         options = "--delete-older-than 7d";
       };
+      
+      # Auto updates
+      autoUpdate = {
+        enable = false; # Auto-updates disabled by default
+      };
     };
     
     # Network features

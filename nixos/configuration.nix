@@ -29,6 +29,8 @@ in
       ./modules/packages/system/gaming.nix
     ] ++ lib.optionals vars.features.packages.media.enable [
       ./modules/packages/system/media.nix
+    ] ++ lib.optionals vars.features.services.autoUpdate.enable [
+      ./modules/system/auto-update.nix
     ];
 
 

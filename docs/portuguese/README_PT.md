@@ -100,6 +100,13 @@ nixos/
       amd.enable = true;
     };
     laptop.enable = false; # Desktop mode
+    
+    # Configuração de Temas
+    gtk = {
+      theme = "gruvbox";              # "catppuccin" | "gruvbox" | "gruvbox-material"
+      icon = "gruvbox-plus-icons";    # "tela-dracula" | "gruvbox-plus-icons"
+    };
+    
     services = {
       fauxmo = {
         enable = true;
@@ -107,6 +114,9 @@ nixos/
       };
       polkit_gnome = {
         enable = true; # GNOME authentication agent
+      };
+      autoUpdate = {
+        enable = false; # Atualizações automáticas semanais (desabilitado por padrão)
       };
     };
   };
@@ -203,6 +213,46 @@ home/development.nix: vscode, claude-code, yarn   # Ferramentas específicas do 
 # gaming-on-demand.nix - Sistema inteligente de otimização
 gaming-mode-on  → Aplica sysctls de performance + CPU governor
 gaming-mode-off → Restaura configurações padrão
+```
+
+### **Configuração Avançada de Gaming**
+```nix
+# Configurações aprimoradas do gamemode em nível de sistema
+programs.gamemode = {
+  enable = true;
+  settings = {
+    general = {
+      renice = 10;              # Maior prioridade para jogos
+      inhibit_screensaver = 1;  # Previne protetor de tela durante jogos
+    };
+  };
+};
+# Steam com camadas de compatibilidade Proton-GE
+# Ferramentas Vulkan e utilitários de performance incluídos
+```
+
+### **Sistema de Temas Dinâmico**
+```nix
+# Seleção de Tema GTK - Troca dinâmica sem rebuilds
+gtk = {
+  theme = "gruvbox";              # "catppuccin" | "gruvbox" | "gruvbox-material"
+  icon = "gruvbox-plus-icons";    # "tela-dracula" | "gruvbox-plus-icons"
+};
+# Cores de ícones aplicadas automaticamente (ícones gruvbox → pastas cinza)
+# Temas instalados condicionalmente (apenas temas selecionados baixados)
+```
+
+### **Atualizações Automáticas do Sistema**
+```nix
+# Atualizações semanais opcionais com notificações
+system.autoUpgrade = {
+  enable = true;                  # Controlado via features.services.autoUpdate.enable
+  flake = inputs.self.outPath;
+  flags = [ "--update-input" "nixpkgs" "--commit-lock-file" ];
+  dates = "weekly";
+  allowReboot = false;            # Seguro: sem reinicializações automáticas
+};
+# Notificação 5 minutos antes das atualizações via libnotify
 ```
 
 ### **Scripts Customizados**

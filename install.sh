@@ -814,6 +814,7 @@ save_config_preset() {
     echo "polkit_enable=$polkit_enable" >> "$PRESET_FILE"
     echo "fauxmo_enable=$fauxmo_enable" >> "$PRESET_FILE"
     echo "gtk_theme=$gtk_theme" >> "$PRESET_FILE"
+    echo "gtk_icon=$gtk_icon" >> "$PRESET_FILE"
     echo "dotfiles_enabled=$dotfiles_enabled" >> "$PRESET_FILE"
     echo "dotfiles_location=$dotfiles_location" >> "$PRESET_FILE"
     
@@ -844,6 +845,18 @@ validate_gtk_theme() {
         echo -e "${YELLOW}Valid values: catppuccin, gruvbox, gruvbox-material${NC}"
         
         gtk_theme=$(ask_choice "$MSG_THEME" "catppuccin" "gruvbox" "gruvbox-material")
+        return 0  # indicates error was found and fixed
+    fi
+    return 1  # indicates no error
+}
+
+# Helper function to validate and fix GTK icon theme
+validate_gtk_icon() {
+    if [[ "$gtk_icon" != "tela-dracula" && "$gtk_icon" != "gruvbox-plus-icons" ]]; then
+        echo -e "${RED}❌ Invalid icon theme: '$gtk_icon'${NC}"
+        echo -e "${YELLOW}Valid values: tela-dracula, gruvbox-plus-icons${NC}"
+        
+        gtk_icon=$(ask_choice "$MSG_ICON" "tela-dracula" "gruvbox-plus-icons")
         return 0  # indicates error was found and fixed
     fi
     return 1  # indicates no error
@@ -937,6 +950,7 @@ validate_and_fix_preset_config() {
     # Validate and fix each component
     validate_gpu_type && has_errors=true
     validate_gtk_theme && has_errors=true
+    validate_gtk_icon && has_errors=true
     validate_boolean_values && has_errors=true
     validate_username && has_errors=true
     validate_hostname && has_errors=true
@@ -1311,6 +1325,22 @@ collect_config() {
             *) echo -e "${RED}$MSG_INVALID_CHOICE${NC}" ;;
         esac
     done
+    
+    # Icon Theme Selection
+    echo
+    echo -e "${BLUE}$MSG_ICON_SELECTION${NC}"
+    echo -e "${YELLOW}$MSG_ICON${NC}"
+    echo "  1) tela-dracula"
+    echo "  2) gruvbox-plus-icons"
+    
+    while true; do
+        read -p "$MSG_CHOICE_PROMPT " choice
+        case $choice in
+            1) gtk_icon="tela-dracula"; break ;;
+            2) gtk_icon="gruvbox-plus-icons"; break ;;
+            *) echo -e "${RED}$MSG_INVALID_CHOICE${NC}" ;;
+        esac
+    done
 
     # Detect and configure additional disks
     detect_additional_disks
@@ -1336,6 +1366,7 @@ show_config_review() {
     echo -e "  ${YELLOW}Polkit GNOME:${NC} $polkit_enable"
     echo -e "  ${YELLOW}Fauxmo/Alexa:${NC} $fauxmo_enable"
     echo -e "  ${YELLOW}GTK Theme:${NC} $gtk_theme"
+    echo -e "  ${YELLOW}Icon Theme:${NC} $gtk_icon"
     echo -e "  ${YELLOW}$MSG_DOTFILES_ENABLED${NC} $dotfiles_enabled"
     if [[ "$dotfiles_enabled" == "true" && -n "$dotfiles_location" ]]; then
         echo -e "  ${YELLOW}$MSG_DOTFILES_LOCATION_DISPLAY${NC} $dotfiles_location"
@@ -1476,6 +1507,7 @@ cat > /tmp/variables.nix << EOF
     # GTK Theme configuration
     gtk = {
       theme = "$gtk_theme";
+      icon = "$gtk_icon";
     };
     
     # Services and integrations

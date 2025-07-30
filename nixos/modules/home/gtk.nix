@@ -3,6 +3,7 @@
 let
   vars = import ../../config/variables.nix;
   currentTheme = vars.features.gtk.theme;
+  currentIcon = vars.features.gtk.icon;
   
   # Theme configurations
   themeConfigs = {
@@ -23,7 +24,41 @@ let
     };
   };
   
+  # Icon theme configurations
+  iconConfigs = {
+    tela-dracula = {
+      package = pkgs.tela-icon-theme;
+      name = "Tela-dracula";
+    };
+    gruvbox-plus-icons = {
+      package = pkgs.gruvbox-plus-icons.overrideAttrs (oldAttrs: {
+        postInstall = (oldAttrs.postInstall or "") + ''
+          # Aplicar cor grey aos ícones de pasta
+          cd "$out/share/icons/Gruvbox-Plus-Dark/places/scalable"
+          
+          # Recriar links para cor grey
+          ln -sfn folder-grey.svg folder.svg
+          ln -sfn bookmarks-grey.svg folder-bookmark.svg
+          
+          # Aplicar grey a outros ícones de pasta
+          for file in *-grey*.svg; do
+            if [[ -f "$file" && "$file" != "folder-grey.svg" && "$file" != "bookmarks-grey.svg" ]]; then
+              target_name="''${file/-grey/}"
+              if [[ -f "$target_name" || -L "$target_name" ]]; then
+                ln -sfn "$file" "$target_name"
+              fi
+            fi
+          done
+          
+          echo "Applied grey color to Gruvbox Plus Dark folder icons"
+        '';
+      });
+      name = "Gruvbox-Plus-Dark";
+    };
+  };
+  
   selectedTheme = themeConfigs.${currentTheme};
+  selectedIcon = iconConfigs.${currentIcon};
   
   windowsCursorsGithub = pkgs.stdenv.mkDerivation {
     pname = "windows-cursors-github";
@@ -48,8 +83,8 @@ in
       name = selectedTheme.name;
     };
     iconTheme = {
-      name = "Tela-dracula";
-      package = pkgs.tela-icon-theme;
+      name = selectedIcon.name;
+      package = selectedIcon.package;
     };
   };
 

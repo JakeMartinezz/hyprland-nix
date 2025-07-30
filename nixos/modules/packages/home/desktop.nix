@@ -16,7 +16,5 @@
     # Text editor
     gnome-text-editor
     
-    # Icons
-    tela-icon-theme
   ];
 }

@@ -793,6 +793,7 @@ echo -e "${BLUE}$MSG_CONFIG${NC}"
 configured_disks=""
 dotfiles_enabled="false"
 dotfiles_location=""
+auto_update_enable="false"
 
 # Configuration preset file (in script directory)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -815,6 +816,7 @@ save_config_preset() {
     echo "fauxmo_enable=$fauxmo_enable" >> "$PRESET_FILE"
     echo "gtk_theme=$gtk_theme" >> "$PRESET_FILE"
     echo "gtk_icon=$gtk_icon" >> "$PRESET_FILE"
+    echo "auto_update_enable=$auto_update_enable" >> "$PRESET_FILE"
     echo "dotfiles_enabled=$dotfiles_enabled" >> "$PRESET_FILE"
     echo "dotfiles_location=$dotfiles_location" >> "$PRESET_FILE"
     
@@ -857,6 +859,18 @@ validate_gtk_icon() {
         echo -e "${YELLOW}Valid values: tela-dracula, gruvbox-plus-icons${NC}"
         
         gtk_icon=$(ask_choice "$MSG_ICON" "tela-dracula" "gruvbox-plus-icons")
+        return 0  # indicates error was found and fixed
+    fi
+    return 1  # indicates no error
+}
+
+# Helper function to validate and fix auto update setting
+validate_auto_update() {
+    if [[ "$auto_update_enable" != "true" && "$auto_update_enable" != "false" ]]; then
+        echo -e "${RED}❌ Invalid auto update setting: '$auto_update_enable'${NC}"
+        echo -e "${YELLOW}Valid values: true, false${NC}"
+        
+        auto_update_enable=$(ask_choice "Enable automatic system updates (weekly)?" "false" "true")
         return 0  # indicates error was found and fixed
     fi
     return 1  # indicates no error
@@ -951,6 +965,7 @@ validate_and_fix_preset_config() {
     validate_gpu_type && has_errors=true
     validate_gtk_theme && has_errors=true
     validate_gtk_icon && has_errors=true
+    validate_auto_update && has_errors=true
     validate_boolean_values && has_errors=true
     validate_username && has_errors=true
     validate_hostname && has_errors=true
@@ -1308,6 +1323,13 @@ collect_config() {
     polkit_enable=$(ask_yes_no "$MSG_POLKIT" "y")
     fauxmo_enable=$(ask_yes_no "$MSG_FAUXMO")
     
+    # Auto Updates Configuration
+    if ask_yes_no "$MSG_AUTO_UPDATE" "n"; then
+        auto_update_enable="true"
+    else
+        auto_update_enable="false"
+    fi
+    
     # GTK Theme Selection
     echo
     echo -e "${BLUE}$MSG_THEME_SELECTION${NC}"
@@ -1367,6 +1389,7 @@ show_config_review() {
     echo -e "  ${YELLOW}Fauxmo/Alexa:${NC} $fauxmo_enable"
     echo -e "  ${YELLOW}GTK Theme:${NC} $gtk_theme"
     echo -e "  ${YELLOW}Icon Theme:${NC} $gtk_icon"
+    echo -e "  ${YELLOW}Auto Updates:${NC} $auto_update_enable"
     echo -e "  ${YELLOW}$MSG_DOTFILES_ENABLED${NC} $dotfiles_enabled"
     if [[ "$dotfiles_enabled" == "true" && -n "$dotfiles_location" ]]; then
         echo -e "  ${YELLOW}$MSG_DOTFILES_LOCATION_DISPLAY${NC} $dotfiles_location"
@@ -1533,6 +1556,11 @@ cat > /tmp/variables.nix << EOF
         automatic = true;
         dates = "weekly";
         options = "--delete-older-than 7d";
+      };
+      
+      # Auto updates
+      autoUpdate = {
+        enable = $auto_update_enable;
       };
     };
     

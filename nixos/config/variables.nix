@@ -69,7 +69,8 @@
     
     # GTK Theme configuration
     gtk = {
-      theme = "gruvbox";
+      theme = "gruvbox"; # "catppuccin" | "gruvbox" | "gruvbox-material"
+      icon = "gruvbox-plus-icons"; # "tela-dracula" | "gruvbox-plus-icons"
     };
     
     # Services and integrations

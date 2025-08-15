@@ -814,6 +814,8 @@ save_config_preset() {
     echo "virtualbox_enable=$virtualbox_enable" >> "$PRESET_FILE"
     echo "polkit_enable=$polkit_enable" >> "$PRESET_FILE"
     echo "fauxmo_enable=$fauxmo_enable" >> "$PRESET_FILE"
+    echo "kanshi_enable=$kanshi_enable" >> "$PRESET_FILE"
+    echo "wake_on_lan_enable=$wake_on_lan_enable" >> "$PRESET_FILE"
     echo "gtk_theme=$gtk_theme" >> "$PRESET_FILE"
     echo "gtk_icon=$gtk_icon" >> "$PRESET_FILE"
     echo "auto_update_enable=$auto_update_enable" >> "$PRESET_FILE"
@@ -879,8 +881,8 @@ validate_auto_update() {
 # Helper function to validate and fix boolean values
 validate_boolean_values() {
     local has_errors=false
-    local boolean_vars=("laptop_enable" "bluetooth_enable" "gaming_enable" "development_enable" "media_enable" "virtualbox_enable" "polkit_enable" "fauxmo_enable")
-    local boolean_messages=("$MSG_LAPTOP" "$MSG_BLUETOOTH" "$MSG_GAMING" "$MSG_DEVELOPMENT" "$MSG_MEDIA" "$MSG_VIRTUALBOX" "$MSG_POLKIT" "$MSG_FAUXMO")
+    local boolean_vars=("laptop_enable" "bluetooth_enable" "gaming_enable" "development_enable" "media_enable" "virtualbox_enable" "polkit_enable" "fauxmo_enable" "kanshi_enable" "wake_on_lan_enable")
+    local boolean_messages=("$MSG_LAPTOP" "$MSG_BLUETOOTH" "$MSG_GAMING" "$MSG_DEVELOPMENT" "$MSG_MEDIA" "$MSG_VIRTUALBOX" "$MSG_POLKIT" "$MSG_FAUXMO" "$MSG_KANSHI" "$MSG_WAKE_ON_LAN")
     
     for i in "${!boolean_vars[@]}"; do
         local var_name="${boolean_vars[$i]}"
@@ -1019,6 +1021,8 @@ show_basic_config() {
     echo -e "  ${YELLOW}VirtualBox:${NC} $virtualbox_enable"
     echo -e "  ${YELLOW}Polkit GNOME:${NC} $polkit_enable"
     echo -e "  ${YELLOW}Fauxmo/Alexa:${NC} $fauxmo_enable"
+    echo -e "  ${YELLOW}Kanshi:${NC} $kanshi_enable"
+    echo -e "  ${YELLOW}Wake on LAN:${NC} $wake_on_lan_enable"
     echo -e "  ${YELLOW}GTK Theme:${NC} $gtk_theme"
     echo -e "  ${YELLOW}Icon Theme:${NC} $gtk_icon"
     echo -e "  ${YELLOW}Auto Updates:${NC} $auto_update_enable"
@@ -1325,6 +1329,8 @@ collect_config() {
     virtualbox_enable=$(ask_yes_no "$MSG_VIRTUALBOX")
     polkit_enable=$(ask_yes_no "$MSG_POLKIT" "y")
     fauxmo_enable=$(ask_yes_no "$MSG_FAUXMO")
+    kanshi_enable=$(ask_yes_no "$MSG_KANSHI" "y")
+    wake_on_lan_enable=$(ask_yes_no "$MSG_WAKE_ON_LAN")
     
     # Auto Updates Configuration
     if ask_yes_no "$MSG_AUTO_UPDATE" "n"; then
@@ -1390,6 +1396,8 @@ show_config_review() {
     echo -e "  ${YELLOW}VirtualBox:${NC} $virtualbox_enable"
     echo -e "  ${YELLOW}Polkit GNOME:${NC} $polkit_enable"
     echo -e "  ${YELLOW}Fauxmo/Alexa:${NC} $fauxmo_enable"
+    echo -e "  ${YELLOW}Kanshi:${NC} $kanshi_enable"
+    echo -e "  ${YELLOW}Wake on LAN:${NC} $wake_on_lan_enable"
     echo -e "  ${YELLOW}GTK Theme:${NC} $gtk_theme"
     echo -e "  ${YELLOW}Icon Theme:${NC} $gtk_icon"
     echo -e "  ${YELLOW}Auto Updates:${NC} $auto_update_enable"
@@ -1565,12 +1573,17 @@ cat > /tmp/variables.nix << EOF
       autoUpdate = {
         enable = $auto_update_enable;
       };
+      
+      # Kanshi display management
+      kanshi = {
+        enable = $kanshi_enable;
+      };
     };
     
     # Network features
     network = {
       wakeOnLan = {
-        enable = true; 
+        enable = $wake_on_lan_enable; 
         interface = "$network_interface";
       };
     };

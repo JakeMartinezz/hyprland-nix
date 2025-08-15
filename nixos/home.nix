@@ -17,6 +17,9 @@ in
     ./modules/packages/home/media.nix
   ] ++ lib.optionals vars.features.packages.gaming.enable [
     ./modules/packages/home/gaming.nix
+  ] ++ lib.optionals vars.features.services.kanshi.enable [
+    ./modules/home/kanshi.nix
+    ./modules/home/hypr-workspace-manager.nix
   ];
 
   home.username = vars.username;

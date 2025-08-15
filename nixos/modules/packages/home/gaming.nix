@@ -8,7 +8,7 @@
     
     # Gaming utilities
     mangohud
-    gamescope
+#    gamescope
   ];
 
 }

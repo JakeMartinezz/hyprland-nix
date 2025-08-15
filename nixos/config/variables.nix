@@ -12,11 +12,11 @@
   features = {
     # GPU Configuration
     gpu = {
-      type = "amd"; # "amd", "nvidia", or "intel"
+      type = "nvidia"; # "amd", "nvidia", or "intel"
       
       # AMD-specific settings
       amd = {
-        enable = true;
+        enable = false;
         optimizations = {
           RADV_PERFTEST = "aco";
           MESA_GL_THREAD = "true";
@@ -25,7 +25,7 @@
       
       # NVIDIA-specific settings
       nvidia = {
-        enable = false;
+        enable = true;
         prime = {
           enable = false;
           sync = true;
@@ -43,14 +43,14 @@
     
     # Bluetooth support
     bluetooth = {
-      enable = false;
-      powerOnBoot = false;
+      enable = true;
+      powerOnBoot = true;
       packages = [ "bluez" "bluez-tools" "blueman" ];
     };
     
     # Laptop-specific features
     laptop = {
-      enable = false;
+      enable = true;
       packages = [ "wpa_supplicant" "hyprlock" ];
     };
     
@@ -69,8 +69,8 @@
     
     # GTK Theme configuration
     gtk = {
-      theme = "gruvbox"; # "catppuccin" | "gruvbox" | "gruvbox-material"
-      icon = "gruvbox-plus-icons"; # "tela-dracula" | "gruvbox-plus-icons"
+      theme = "gruvbox";
+      icon = "gruvbox-plus-icons";
     };
     
     # Services and integrations
@@ -100,7 +100,12 @@
       
       # Auto updates
       autoUpdate = {
-        enable = false; # Auto-updates disabled by default
+        enable = true;
+      };
+      
+      # Kanshi display management
+      kanshi = {
+        enable = true;
       };
     };
     
@@ -108,7 +113,7 @@
     network = {
       wakeOnLan = {
         enable = true; 
-        interface = "enp6s0";
+        interface = "enp0s13f0u1u4";
       };
     };
   };
@@ -117,7 +122,7 @@
   filesystems = {
     drives = {
       disco1 = {
-        uuid = "7e119fb3-fb23-48b2-8e71-ee0d53691ecf";
+        uuid = "5fc9631f-039b-43ee-b889-15d749130492";
         mountPoint = "/mnt/discos";
         fsType = "ext4";
         options = [ "defaults" "x-gvfs-show" ];

@@ -10,9 +10,11 @@
     extraConfig = {
       pipewire = {
         "context.properties" = {
-          "default.clock.quantum" = 128;
-          "default.clock.min-quantum" = 128;
-          "default.clock.max-quantum" = 128;
+          # Fix for audio crackling (xrun errors)
+          # Higher min-quantum prevents audio dropouts on weak integrated sound chips
+          "default.clock.min-quantum" = 1024;
+          "default.clock.quantum" = 1024;
+          "default.clock.max-quantum" = 8192;
         };
       };
       jack = {

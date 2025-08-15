@@ -85,7 +85,6 @@ in
         vaapiVdpau
         
         # NVIDIA específico
-        nvtop                    # Monitor GPU
         nvidia-system-monitor-qt # GUI monitor
       ];
       
@@ -103,31 +102,6 @@ in
         __GL_MaxFramesAllowed = "1";                     # Reduz input lag
         __GL_SHADER_DISK_CACHE = "1";                   # Shader cache
         __GL_SHADER_DISK_CACHE_SKIP_CLEANUP = "1";      # Mantém cache
-        
-        # NVIDIA específico para gaming
-        __GL_THREADED_OPTIMIZATIONS = "1";               # Multi-threading
-        __GL_YIELD = "NOTHING";                          # Reduz latência
-        __NV_PRIME_RENDER_OFFLOAD = "1";                # PRIME render offload
-        __GLX_VENDOR_LIBRARY_NAME = "nvidia";            
-        
-        # DLSS/DLDSR
-        PROTON_ENABLE_NVAPI = "1";                       # NVAPI para DLSS
-        DXVK_ENABLE_NVAPI = "1";                         # DLSS no DXVK
-        PROTON_HIDE_NVIDIA_GPU = "0";                    # Mostra GPU
-        WINE_HIDE_NVIDIA_GPU = "0";
-        
-        # Vulkan
-        VK_ICD_FILENAMES = "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.x86_64.json";
-        
-        # CUDA para aplicações que usam
-        CUDA_CACHE_DISABLE = "0";                        # Habilita cache CUDA
-        CUDA_CACHE_PATH = "$HOME/.cache/cuda";
-        CUDA_CACHE_MAXSIZE = "2147483648";              # 2GB cache
-        
-        # Image scaling
-        PROTON_ENABLE_NGX_UPDATER = "1";                 # NGX (DLSS updater)
-        __GL_SHARPEN_ENABLE = "1";                       # Image sharpening
-        __GL_SHARPEN_VALUE = "50";                       # 0-100
       };
       
       # NVIDIA specific optimizations

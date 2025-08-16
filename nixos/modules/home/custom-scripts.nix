@@ -156,7 +156,7 @@ let
           
           # Execute swww in background and wait for completion
           {
-              swww img --outputs "$monitor" "$wallpaper" 2>/dev/null
+              swww img --outputs "$monitor" --transition-type grow --transition-duration 1.0 "$wallpaper" 2>/dev/null
               echo $? > /tmp/swww_exit_$$
           } &
           

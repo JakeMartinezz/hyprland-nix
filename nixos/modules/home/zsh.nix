@@ -53,6 +53,9 @@
       [[ -n "''${key[Right]}"         ]] && bindkey -- "''${key[Right]}"          forward-char
       [[ -n "''${key[Control-Left]}"  ]] && bindkey -- "''${key[Control-Left]}"   backward-word
       [[ -n "''${key[Control-Right]}" ]] && bindkey -- "''${key[Control-Right]}"  forward-word
+      
+      # Ctrl+Backspace para deletar palavra anterior
+      bindkey '^H' backward-kill-word
 
       # --- Hooks do ZLE (Zsh Line Editor) ---
       if (( ''${+terminfo[smkx]} && ''${+terminfo[rmkx]} )); then

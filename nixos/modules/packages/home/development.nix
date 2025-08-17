@@ -15,6 +15,8 @@
     ripgrep
     jq
     
+    # AI and automation
+    gemini-cli
     
     # Note: python3 moved to system core packages (more fundamental)
   ];

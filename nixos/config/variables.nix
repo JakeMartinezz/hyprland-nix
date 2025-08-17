@@ -112,8 +112,8 @@
     # Network features
     network = {
       wakeOnLan = {
-        enable = true; 
-        interface = "enp0s13f0u1u4";
+        enable = false; 
+        interface = "wlp0s20f3";
       };
     };
   };

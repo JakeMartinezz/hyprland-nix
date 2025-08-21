@@ -97,6 +97,54 @@ check_nixos() {
     fi
 }
 
+# Function to check script execution location and permissions
+check_execution_environment() {
+    local current_dir=$(pwd)
+    
+    # Check if running from /etc/nixos (dangerous)
+    if [[ "$current_dir" == "/etc/nixos" ]] || [[ "$current_dir" == "/etc/nixos/"* ]]; then
+        echo -e "${RED}❌ ERRO: Não execute este script dentro de /etc/nixos!${NC}"
+        echo -e "${YELLOW}💡 Soluções:${NC}"
+        echo -e "  1. Clone em seu diretório home: ${CYAN}git clone <repo> ~/nixos-config${NC}"
+        echo -e "  2. Execute de lá: ${CYAN}cd ~/nixos-config && ./install.sh${NC}"
+        echo ""
+        echo -e "${YELLOW}⚠️ Executar em /etc/nixos pode causar:${NC}"
+        echo -e "  • Problemas de permissão"
+        echo -e "  • Conflitos com configuração existente"  
+        echo -e "  • Perda de dados"
+        exit 1
+    fi
+    
+    # Check if script directory is writable (for preset.conf)
+    if [[ ! -w "$SCRIPT_DIR" ]]; then
+        echo -e "${RED}❌ ERRO: Sem permissão de escrita no diretório do script${NC}"
+        echo -e "${YELLOW}💡 Diretório atual: ${CYAN}$SCRIPT_DIR${NC}"
+        echo -e "${YELLOW}💡 Soluções:${NC}"
+        echo -e "  1. Execute de um diretório com permissões: ${CYAN}~/Downloads, ~/Documents${NC}"
+        echo -e "  2. Mude as permissões: ${CYAN}chmod 755 $SCRIPT_DIR${NC}"
+        exit 1
+    fi
+    
+    # Check if target config path is writable
+    if [[ ! -w "/etc" ]]; then
+        echo -e "${YELLOW}⚠️ AVISO: Será necessário sudo para instalar em $NIXOS_CONFIG_PATH${NC}"
+        
+        # Test sudo access early
+        if ! sudo -n true 2>/dev/null; then
+            echo -e "${BLUE}🔐 Este instalador precisa de privilégios sudo para:${NC}"
+            echo -e "  • Instalar configuração em $NIXOS_CONFIG_PATH"
+            echo -e "  • Executar nixos-rebuild"
+            echo ""
+            echo -e "${YELLOW}Testando acesso sudo...${NC}"
+            if ! sudo -v; then
+                echo -e "${RED}❌ ERRO: Acesso sudo negado${NC}"
+                exit 1
+            fi
+            echo -e "${GREEN}✅ Acesso sudo confirmado${NC}"
+        fi
+    fi
+}
+
 # Function to check system dependencies
 check_dependencies() {
     echo -e "${BLUE}$MSG_DEPENDENCY_CHECK${NC}"
@@ -764,6 +812,7 @@ print_header
 
 # System checks
 check_nixos
+check_execution_environment
 check_dependencies
 check_nixos_rebuild
 

@@ -146,6 +146,9 @@
     keepOutputs = true;
     keepDerivations = true;
     autoOptimiseStore = true;
+    
+    # System generations
+    rollbackGenerations = 2;
   };
   
 }

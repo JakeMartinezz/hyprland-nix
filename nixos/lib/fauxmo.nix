@@ -61,18 +61,18 @@ let
 
 in
 {
+  # Fauxmo service - controlled manually by hypr-workspace-manager
   systemd.services.fauxmo = {
-    description = "Fauxmo Alexa Bridge";
-    wantedBy = [ "multi-user.target" ];
+    description = "Fauxmo Alexa Bridge (Monitor controlled)";
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
+    # Note: No wantedBy - service is controlled by monitor configuration changes
 
     serviceConfig = {
       User = "root";
       Group = "root";
       ExecStart = fauxmoStartScript;
-      Restart = "on-failure";
-      RestartSec = "5s";
+      Restart = "no"; # Manual control only
       RuntimeDirectory = "fauxmo";
     };
   };

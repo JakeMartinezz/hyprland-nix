@@ -977,6 +977,7 @@ save_config_preset() {
     echo "gtk_theme=$gtk_theme" >> "$PRESET_FILE"
     echo "gtk_icon=$gtk_icon" >> "$PRESET_FILE"
     echo "auto_update_enable=$auto_update_enable" >> "$PRESET_FILE"
+    echo "rollback_generations=$rollback_generations" >> "$PRESET_FILE"
     echo "dotfiles_enabled=$dotfiles_enabled" >> "$PRESET_FILE"
     echo "dotfiles_location=$dotfiles_location" >> "$PRESET_FILE"
     
@@ -1184,6 +1185,7 @@ show_basic_config() {
     echo -e "  ${YELLOW}GTK Theme:${NC} $gtk_theme"
     echo -e "  ${YELLOW}Icon Theme:${NC} $gtk_icon"
     echo -e "  ${YELLOW}Auto Updates:${NC} $auto_update_enable"
+    echo -e "  ${YELLOW}Rollback Generations:${NC} $rollback_generations"
 }
 
 # Helper function to parse and display disk details
@@ -1497,6 +1499,26 @@ collect_config() {
         auto_update_enable="false"
     fi
     
+    # Rollback Generations Configuration
+    echo
+    echo -e "${BLUE}$MSG_ROLLBACK_GENERATIONS${NC}"
+    echo -e "${GRAY}$MSG_ROLLBACK_GENERATIONS_DESC${NC}"
+    echo -e "${GRAY}$MSG_ROLLBACK_DEFAULT_DESC${NC}"
+    echo -e "${YELLOW}$MSG_ROLLBACK_EXAMPLES${NC}"
+    echo
+    
+    rollback_generations=$(ask_input "$MSG_ROLLBACK_GENERATIONS" "2")
+    rollback_generations=${rollback_generations:-2}
+    
+    # Validate rollback generations (must be positive integer)
+    while ! [[ "$rollback_generations" =~ ^[1-9][0-9]*$ ]]; do
+        echo -e "${RED}❌ Erro: Deve ser um número inteiro positivo${NC}"
+        rollback_generations=$(ask_input "$MSG_ROLLBACK_GENERATIONS" "2")
+        rollback_generations=${rollback_generations:-2}
+    done
+    
+    echo -e "${GREEN}✅ Gerações de rollback: $rollback_generations${NC}"
+    
     # GTK Theme Selection
     echo
     echo -e "${BLUE}$MSG_THEME_SELECTION${NC}"
@@ -1559,6 +1581,7 @@ show_config_review() {
     echo -e "  ${YELLOW}GTK Theme:${NC} $gtk_theme"
     echo -e "  ${YELLOW}Icon Theme:${NC} $gtk_icon"
     echo -e "  ${YELLOW}Auto Updates:${NC} $auto_update_enable"
+    echo -e "  ${YELLOW}Rollback Generations:${NC} $rollback_generations"
     echo -e "  ${YELLOW}$MSG_DOTFILES_ENABLED${NC} $dotfiles_enabled"
     if [[ "$dotfiles_enabled" == "true" && -n "$dotfiles_location" ]]; then
         echo -e "  ${YELLOW}$MSG_DOTFILES_LOCATION_DISPLAY${NC} $dotfiles_location"
@@ -1774,6 +1797,9 @@ fi)
     keepOutputs = true;
     keepDerivations = true;
     autoOptimiseStore = true;
+    
+    # System generations
+    rollbackGenerations = $rollback_generations;
   };
   
 }

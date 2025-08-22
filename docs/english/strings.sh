@@ -253,3 +253,9 @@ MSG_DOTFILES_WILL_APPLY="Dotfiles will be applied after successful rebuild"
 MSG_DOTFILES_SELECTED_LOCATION="Selected location:"
 MSG_DOTFILES_ENABLED="Dotfiles enabled:"
 MSG_DOTFILES_LOCATION_DISPLAY="Dotfiles location:"
+
+# Rollback generations configuration
+MSG_ROLLBACK_GENERATIONS="How many rollback generations to keep in the system?"
+MSG_ROLLBACK_GENERATIONS_DESC="Generations allow reverting system updates"
+MSG_ROLLBACK_DEFAULT_DESC="Default: 2 generations (recommended for daily use)"
+MSG_ROLLBACK_EXAMPLES="Examples: 1 (minimum), 2 (default), 5 (development)"

@@ -283,7 +283,7 @@ clean   → GC + optimization + backup to ${backupPath}
 ### **📖 Complete Guides**
 - **[Configuration Guide](docs/english/GUIDE_EN.md)**: Detailed guide with examples and customization instructions
 - **[Guia de Configuração](docs/portuguese/GUIDE_PT.md)**: Guia detalhado com exemplos e instruções de customização
-- **[Portuguese README](docs/portuguese/README_PT.md)**: Documentação completa em português
+- **[Portuguese README](docs/portuguese/README.md)**: Documentação completa em português
 
 ### **🔧 Technical Documentation**
 - **[Coding Standards](docs/english/CODING_STANDARDS.md)**: Development guidelines and best practices

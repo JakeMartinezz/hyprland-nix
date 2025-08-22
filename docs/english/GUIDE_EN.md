@@ -250,6 +250,8 @@ nixos/
 │   │   ├── gaming-on-demand.nix   🎮 Gaming optimizations
 │   │   ├── git.nix                📝 Git configuration
 │   │   ├── gtk.nix                🎨 GTK themes
+│   │   ├── hypr-workspace-manager.nix 🖥️ Monitor-based service management
+│   │   ├── kanshi.nix             📺 Display/monitor configuration
 │   │   └── zsh.nix                💻 Custom shell
 │   ├── packages/
 │   │   ├── home/                  📦 USER PACKAGES

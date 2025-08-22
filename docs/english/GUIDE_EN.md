@@ -40,6 +40,8 @@ The intelligent installer (`install.sh`) provides a comprehensive interactive se
 - **Hardware Detection**: Automatic detection of system components
 - **Service Selection**: Choose which services to enable (VirtualBox, Alexa integration, etc.)
 - **Package Categories**: Select gaming, development, media, and desktop packages
+- **Rollback Generations**: Configure how many system generations to keep (default: 2)
+- **Security Checks**: Prevents common installation errors with pre-flight validation
 - **Real-time Validation**: Input validation with helpful error messages
 
 #### **🎮 Smart GPU Detection**
@@ -100,6 +102,9 @@ Use this configuration? (Y/n):
    - System requirements check (RAM, disk space, architecture)
    - Dependency verification (required tools and packages)
    - Permission validation (sudo access, write permissions)
+   - Security environment checks (container detection, UEFI/BIOS, Secure Boot)
+   - Internet connectivity verification (NixOS cache, GitHub access)
+   - Input validation (username/hostname format checking)
 
 2. **Configuration Preview**
    ```bash
@@ -132,6 +137,8 @@ Use this configuration? (Y/n):
    - GPU type selection with automatic detection
    - Feature enablement/disablement (laptop mode, Bluetooth, etc.)
    - Service configuration (VirtualBox, Alexa integration, etc.)
+   - Rollback generations configuration (system stability management)
+   - Auto-update settings (weekly system updates)
 
 3. **💾 Disk Configuration**
    - Additional disk detection and analysis
@@ -184,9 +191,11 @@ Use this configuration? (Y/n):
 - **Space Requirements**: Ensure at least 2GB free space in `/nix/store`
 
 #### **Recovery Options**
-- **Rollback**: Use `nixos-rebuild --rollback` if rebuild fails
-- **Manual Configuration**: Edit `/etc/nixos/variables.nix` directly if needed
+- **Rollback**: Use `nixos-rebuild --rollback` if rebuild fails (2 generations kept by default)
+- **Boot Menu Recovery**: Select older generations from systemd-boot menu
+- **Manual Configuration**: Edit `/etc/nixos/config/variables.nix` directly if needed
 - **Hardware Reset**: Regenerate `hardware-configuration.nix` with `nixos-generate-config`
+- **Generation Management**: View with `nixos-rebuild list-generations`
 
 ## 🔧 How the System Works
 
@@ -520,6 +529,10 @@ update
 # Clean system + backup
 clean
 
+# System generations management
+nixos-rebuild list-generations
+nixos-rebuild --rollback
+
 # Manual equivalents:
 nixos-rebuild switch --flake /etc/nixos#default
 nixos-rebuild switch --flake /etc/nixos#default --upgrade
@@ -544,9 +557,16 @@ gaming-mode-status
 systemctl status fauxmo
 systemctl --user status polkit-gnome-authentication-agent-1
 
+# Fauxmo control (monitor-based automation)
+sudo systemctl start fauxmo    # Manual start
+sudo systemctl stop fauxmo     # Manual stop
+
 # Service logs
 journalctl -u fauxmo -f
 journalctl --user -u polkit-gnome-authentication-agent-1 -f
+
+# Monitor system status
+hypr-workspace-manager status  # Check monitor configuration and services
 ```
 
 ## 🔧 Advanced Customization

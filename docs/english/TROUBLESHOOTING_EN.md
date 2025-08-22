@@ -11,8 +11,9 @@ This guide helps you resolve common issues encountered during installation and c
 5. [Disk Configuration Problems](#-disk-configuration-problems)
 6. [Network and Download Issues](#-network-and-download-issues)
 7. [Permission and Access Issues](#-permission-and-access-issues)
-8. [Recovery Procedures](#-recovery-procedures)
-9. [Advanced Debugging](#-advanced-debugging)
+8. [Service Management Issues](#-service-management-issues)
+9. [Rollback and Recovery Procedures](#-rollback-and-recovery-procedures)
+10. [Advanced Debugging](#-advanced-debugging)
 
 ## 🚀 Installation Issues
 
@@ -53,6 +54,28 @@ nix-shell -p git curl coreutils
 # Then run the installer
 ./install.sh
 ```
+
+#### Problem: Security check failures
+**Symptoms:** Installer exits during security validation
+
+**Common Issues:**
+1. **Running as root:**
+   ```bash
+   ❌ ERROR: Do not run this installer as root!
+   ```
+   **Solution:** Run as normal user: `./install.sh`
+
+2. **No internet connection:**
+   ```bash
+   ❌ ERROR: No internet connection
+   ```
+   **Solution:** Check network connectivity and DNS
+
+3. **Invalid execution location:**
+   ```bash
+   ❌ ERROR: Do not run this script inside /etc/nixos!
+   ```
+   **Solution:** Run from home directory or Downloads
 
 ### **Configuration Collection Fails**
 
@@ -454,7 +477,79 @@ sudo chown -R root:root /etc/nixos
 sudo chmod 755 /etc/nixos
 ```
 
-## 🚨 Recovery Procedures
+## 🔧 Service Management Issues
+
+### **Fauxmo Service Problems**
+
+#### Problem: Fauxmo won't start automatically
+**Symptoms:** Service doesn't start with monitor changes
+
+**Solutions:**
+1. **Check Service Status:**
+   ```bash
+   systemctl status fauxmo
+   journalctl -u fauxmo -f
+   ```
+
+2. **Verify Sudo Permissions:**
+   ```bash
+   # Test passwordless sudo for Fauxmo
+   sudo systemctl status fauxmo
+   # Should not prompt for password
+   ```
+
+3. **Manual Service Control:**
+   ```bash
+   # Start manually
+   sudo systemctl start fauxmo
+   
+   # Check logs for errors
+   journalctl -u fauxmo --since="5 minutes ago"
+   ```
+
+#### Problem: Monitor detection not triggering Fauxmo
+**Solutions:**
+1. **Check Monitor Count:**
+   ```bash
+   hyprctl monitors | grep "Monitor"
+   # Should show monitor count changes
+   ```
+
+2. **Verify Workspace Manager:**
+   ```bash
+   # Check if script is running
+   ps aux | grep hypr-workspace-manager
+   ```
+
+3. **Test Manual Execution:**
+   ```bash
+   # Simulate docked mode (3 monitors)
+   /path/to/hypr-workspace-manager 3
+   
+   # Simulate laptop mode (1 monitor)
+   /path/to/hypr-workspace-manager 1
+   ```
+
+### **Polkit Authentication Issues**
+
+#### Problem: No GUI authentication prompts
+**Solutions:**
+1. **Check Agent Status:**
+   ```bash
+   systemctl --user status polkit-gnome-authentication-agent-1
+   ```
+
+2. **Restart Agent:**
+   ```bash
+   systemctl --user restart polkit-gnome-authentication-agent-1
+   ```
+
+3. **Manual Start:**
+   ```bash
+   /run/current-system/sw/libexec/polkit-gnome-authentication-agent-1 &
+   ```
+
+## 🔄 Rollback and Recovery Procedures
 
 ### **System Won't Boot**
 
@@ -473,24 +568,71 @@ sudo chmod 755 /etc/nixos
 
 4. **Rollback Configuration:**
    ```bash
+   # Quick rollback to previous generation
    nixos-rebuild --rollback
-   # Or list generations and choose
-   nix-env --list-generations --profile /nix/var/nix/profiles/system
-   nixos-rebuild switch --rollback-generation 123
+   
+   # List available generations (limited by rollbackGenerations setting)
+   nixos-rebuild list-generations
+   
+   # Switch to specific generation
+   sudo /nix/var/nix/profiles/system-123-link/bin/switch-to-configuration switch
+   
+   # Check current generation
+   nixos-rebuild list-generations | grep current
+   ```
+
+### **Generation Management**
+
+#### Problem: Too many old generations consuming disk space
+**Solutions:**
+1. **Adjust Generation Limit:**
+   ```bash
+   # Edit variables.nix
+   sudo nano /etc/nixos/config/variables.nix
+   # Change: rollbackGenerations = 2;  # or desired number
+   rebuild
+   ```
+
+2. **Manual Cleanup:**
+   ```bash
+   # Delete old generations (keep last 2)
+   sudo nix-collect-garbage --delete-older-than 2d
+   
+   # Or delete specific generation
+   sudo nix-env --delete-generations 123 --profile /nix/var/nix/profiles/system
    ```
 
 ### **Restore from Backup**
 
 #### If Installation Created Backup:
 ```bash
-# Backup location (usually shown during installation)
-ls ~/nixos-backup-*
+# Backup location (shown during installation)
+ls /etc/nixos.backup.*
 
 # Restore backup
 sudo rm -rf /etc/nixos/*
-sudo cp -r ~/nixos-backup-*/* /etc/nixos/
+sudo cp -r /etc/nixos.backup.*/* /etc/nixos/
 sudo nixos-rebuild switch
 ```
+
+#### Problem: Rollback generations limit reached
+**Symptoms:** Can't rollback far enough, important generation was cleaned up
+
+**Solutions:**
+1. **Restore from preset:**
+   ```bash
+   # Use saved preset to recreate configuration
+   cd ~/nixos  # or wherever installer is located
+   ./install.sh  # Will detect and offer to use preset.conf
+   ```
+
+2. **Manual configuration recreation:**
+   ```bash
+   # Start with minimal config and rebuild
+   sudo nixos-generate-config
+   # Copy your variables.nix from backup or preset
+   sudo cp preset-variables.nix /etc/nixos/config/variables.nix
+   ```
 
 ### **Complete Reset**
 

@@ -30,10 +30,11 @@ Common questions and answers about the NixOS Configuration Installer and setup.
 ### **Q: What makes this different from other NixOS configurations?**
 **A:** Key differences:
 - **Universal Design**: One config adapts to any hardware via feature flags
-- **Intelligent Installer**: Interactive setup with hardware detection
+- **Intelligent Installer**: Interactive setup with hardware detection and security checks
 - **Gaming Focus**: Built-in gaming optimizations and scripts
 - **Multilingual**: Full Portuguese and English support
 - **Smart Disk Management**: Automatic additional disk detection and mounting
+- **Advanced Features**: Fauxmo integration, configurable rollback generations, auto-service management
 
 ### **Q: Is this beginner-friendly?**
 **A:** Yes! The interactive installer guides you through:
@@ -62,7 +63,8 @@ Common questions and answers about the NixOS Configuration Installer and setup.
 
 ### **Q: How long does installation take?**
 **A:** Installation time varies:
-- **Configuration**: 5-10 minutes (interactive setup)
+- **Security checks**: 1-2 minutes (connectivity, environment, input validation)
+- **Configuration**: 5-10 minutes (interactive setup including rollback generations)
 - **File copying**: 1-2 minutes
 - **Rebuild**: 15-45 minutes (depending on enabled features and internet speed)
 - **Total**: 20-60 minutes for complete setup
@@ -78,9 +80,10 @@ Common questions and answers about the NixOS Configuration Installer and setup.
 **A:** The installer is designed for safety:
 - Creates backups before making changes
 - Provides detailed error messages
-- Offers rollback options
+- Offers rollback options (2 generations kept by default)
 - Has comprehensive troubleshooting documentation
-- See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for specific solutions
+- Security checks prevent common installation errors
+- See [TROUBLESHOOTING_EN.md](TROUBLESHOOTING_EN.md) for specific solutions
 
 ## ⚙️ Configuration Questions
 
@@ -98,14 +101,28 @@ Common questions and answers about the NixOS Configuration Installer and setup.
 3. **Manual editing**: Edit specific module files as needed
 4. **Use rebuild command**: `rebuild` after making changes
 
+### **Q: How do I manage system generations and rollbacks?**
+**A:** The system automatically manages rollback generations:
+- **Default**: 2 generations kept (configurable during installation)
+- **View generations**: `nixos-rebuild list-generations`
+- **Rollback**: `nixos-rebuild --rollback` or `sudo /nix/var/nix/profiles/system-[generation]/bin/switch-to-configuration switch`
+- **Configure**: Set `rollbackGenerations` in `variables.nix` and run installer
+- **Boot menu**: Older generations appear in boot menu for emergency recovery
+
 ### **Q: Can I disable features I don't need?**
 **A:** Yes! Edit `/etc/nixos/config/variables.nix`:
 ```nix
 features = {
-  gaming.enable = false;        # Disable gaming packages
-  development.enable = false;   # Disable dev tools
-  media.enable = false;         # Disable media applications
-  services.virtualbox.enable = false;  # Disable VirtualBox
+  packages = {
+    gaming.enable = false;        # Disable gaming packages
+    development.enable = false;   # Disable dev tools
+    media.enable = false;         # Disable media applications
+  };
+  services = {
+    virtualbox.enable = false;    # Disable VirtualBox
+    fauxmo.enable = false;        # Disable Alexa integration
+    kanshi.enable = false;        # Disable display management
+  };
 };
 ```
 Then run: `rebuild`

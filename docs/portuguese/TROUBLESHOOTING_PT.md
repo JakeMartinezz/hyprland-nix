@@ -11,8 +11,9 @@ Este guia ajuda você a resolver problemas comuns encontrados durante a instala�
 5. [Problemas de Configuração de Discos](#-problemas-de-configuração-de-discos)
 6. [Problemas de Rede e Download](#-problemas-de-rede-e-download)
 7. [Problemas de Permissão e Acesso](#-problemas-de-permissão-e-acesso)
-8. [Procedimentos de Recuperação](#-procedimentos-de-recuperação)
-9. [Debug Avançado](#-debug-avançado)
+8. [Problemas de Gerenciamento de Serviços](#-problemas-de-gerenciamento-de-serviços)
+9. [Procedimentos de Rollback e Recuperação](#-procedimentos-de-rollback-e-recuperação)
+10. [Debug Avançado](#-debug-avançado)
 
 ## 🚀 Problemas de Instalação
 
@@ -47,6 +48,35 @@ chmod +x install.sh
 ```
 
 **Solução:**
+```bash
+# Instalar dependências ausentes
+nix-shell -p git curl coreutils
+# Depois executar o instalador
+./install.sh
+```
+
+#### Problema: Falhas nas verificações de segurança
+**Sintomas:** Instalador sai durante validação de segurança
+
+**Problemas Comuns:**
+1. **Executando como root:**
+   ```bash
+   ❌ ERRO: Não execute este instalador como root!
+   ```
+   **Solução:** Execute como usuário normal: `./install.sh`
+
+2. **Sem conexão com internet:**
+   ```bash
+   ❌ ERRO: Sem conexão com internet
+   ```
+   **Solução:** Verificar conectividade de rede e DNS
+
+3. **Local de execução inválido:**
+   ```bash
+   ❌ ERRO: Não execute este script dentro de /etc/nixos!
+   ```
+   **Solução:** Execute do diretório home ou Downloads
+
 ```bash
 # Instalar dependências ausentes
 nix-shell -p git curl coreutils

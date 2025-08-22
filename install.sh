@@ -145,6 +145,16 @@ check_execution_environment() {
     fi
 }
 
+# Function to check if not running as root
+check_root_execution() {
+    if [[ $EUID -eq 0 ]]; then
+        echo -e "${RED}$MSG_NO_ROOT_EXECUTION${NC}"
+        echo -e "${YELLOW}$MSG_ROOT_SOLUTION${NC}"
+        echo -e "${YELLOW}$MSG_ROOT_SECURITY_RISK${NC}"
+        exit 1
+    fi
+}
+
 # Function to check security environment
 check_security_environment() {
     echo -e "${BLUE}$MSG_SECURITY_CHECK${NC}"
@@ -908,6 +918,7 @@ print_header
 
 # System checks
 check_nixos
+check_root_execution
 check_execution_environment
 check_internet_connection
 check_security_environment

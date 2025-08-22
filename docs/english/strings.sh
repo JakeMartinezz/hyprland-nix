@@ -116,6 +116,11 @@ MSG_CONFIG_FIXED="✅ Configuration fixed!"
 MSG_SAVE_CORRECTIONS_QUESTION="Do you want to save the corrections to the preset?"
 MSG_SAVE_CORRECTIONS="Save corrections?"
 
+# Root execution check
+MSG_NO_ROOT_EXECUTION="❌ ERROR: Do not run this installer as root!"
+MSG_ROOT_SOLUTION="💡 Run as normal user: ./install.sh"
+MSG_ROOT_SECURITY_RISK="⚠️ Running as root is dangerous and unnecessary"
+
 # Security checks
 MSG_SECURITY_CHECK="🔐 Checking security environment..."
 MSG_CONTAINER_DETECTED="⚠️ Running in container. Limited functionality"

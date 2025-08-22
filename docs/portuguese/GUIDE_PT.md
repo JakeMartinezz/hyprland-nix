@@ -40,6 +40,8 @@ O instalador inteligente (`install.sh`) fornece uma experiência de configuraç�
 - **Detecção de Hardware**: Detecção automática de componentes do sistema
 - **Seleção de Serviços**: Escolha quais serviços ativar (VirtualBox, integração Alexa, etc.)
 - **Categorias de Pacotes**: Selecione pacotes de gaming, desenvolvimento, mídia e desktop
+- **Gerações de Rollback**: Configure quantas gerações do sistema manter (padrão: 2)
+- **Verificações de Segurança**: Previne erros comuns de instalação com validação pré-voo
 - **Validação em Tempo Real**: Validação de entrada com mensagens de erro úteis
 
 #### **🎮 Detecção Inteligente de GPU**
@@ -98,6 +100,11 @@ Usar esta configuração? (Y/n):
 
 1. **Validação Pré-Instalação**
    - Verificação de requisitos do sistema (RAM, espaço em disco, arquitetura)
+   - Verificação de dependências (ferramentas e pacotes necessários)
+   - Validação de permissões (acesso sudo, permissões de escrita)
+   - Verificações de ambiente de segurança (detecção de container, UEFI/BIOS, Secure Boot)
+   - Verificação de conectividade de internet (cache NixOS, acesso GitHub)
+   - Validação de entrada (verificação de formato username/hostname)
    - Verificação de dependências (ferramentas e pacotes necessários)
    - Validação de permissões (acesso sudo, permissões de escrita)
 

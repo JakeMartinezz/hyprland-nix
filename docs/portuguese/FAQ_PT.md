@@ -30,10 +30,11 @@ Perguntas e respostas comuns sobre o Instalador de Configuração NixOS e config
 ### **P: O que torna esta configuração diferente de outras configurações NixOS?**
 **R:** Principais diferenças:
 - **Design Universal**: Uma config se adapta a qualquer hardware via feature flags
-- **Instalador Inteligente**: Configuração interativa com detecção de hardware
+- **Instalador Inteligente**: Configuração interativa com detecção de hardware e verificações de segurança
 - **Foco em Gaming**: Otimizações e scripts de gaming integrados
 - **Multilíngue**: Suporte completo em português e inglês
 - **Gerenciamento Inteligente de Discos**: Detecção e montagem automática de discos adicionais
+- **Recursos Avançados**: Integração Fauxmo, gerações de rollback configuráveis, gerenciamento automático de serviços
 
 ### **P: Esta configuração é amigável para iniciantes?**
 **R:** Sim! O instalador interativo te guia através de:
@@ -62,7 +63,8 @@ Perguntas e respostas comuns sobre o Instalador de Configuração NixOS e config
 
 ### **P: Quanto tempo demora a instalação?**
 **R:** O tempo de instalação varia:
-- **Configuração**: 5-10 minutos (configuração interativa)
+- **Verificações de segurança**: 1-2 minutos (conectividade, ambiente, validação de entrada)
+- **Configuração**: 5-10 minutos (configuração interativa incluindo gerações de rollback)
 - **Cópia de arquivos**: 1-2 minutos
 - **Rebuild**: 15-45 minutos (dependendo dos recursos habilitados e velocidade da internet)
 - **Total**: 20-60 minutos para configuração completa
@@ -78,9 +80,10 @@ Perguntas e respostas comuns sobre o Instalador de Configuração NixOS e config
 **R:** O instalador é projetado para segurança:
 - Cria backups antes de fazer mudanças
 - Fornece mensagens de erro detalhadas
-- Oferece opções de rollback
+- Oferece opções de rollback (2 gerações mantidas por padrão)
 - Tem documentação abrangente de solução de problemas
-- Veja [TROUBLESHOOTING.md](TROUBLESHOOTING.md) para soluções específicas
+- Verificações de segurança previnem erros comuns de instalação
+- Veja [TROUBLESHOOTING_PT.md](TROUBLESHOOTING_PT.md) para soluções específicas
 
 ## ⚙️ Perguntas sobre Configuração
 
@@ -97,6 +100,14 @@ Perguntas e respostas comuns sobre o Instalador de Configuração NixOS e config
 2. **Executar instalador novamente**: Re-executar `./install.sh` para modificar recursos
 3. **Edição manual**: Editar arquivos de módulos específicos conforme necessário
 4. **Usar comando rebuild**: `rebuild` após fazer mudanças
+
+### **P: Como gerencio gerações do sistema e rollbacks?**
+**R:** O sistema gerencia automaticamente as gerações de rollback:
+- **Padrão**: 2 gerações mantidas (configurável durante a instalação)
+- **Ver gerações**: `nixos-rebuild list-generations`
+- **Rollback**: `nixos-rebuild --rollback` ou `sudo /nix/var/nix/profiles/system-[generation]/bin/switch-to-configuration switch`
+- **Configurar**: Definir `rollbackGenerations` em `variables.nix` e executar instalador
+- **Menu de boot**: Gerações antigas aparecem no menu de boot para recuperação de emergência
 
 ### **P: Posso desabilitar recursos que não preciso?**
 **R:** Sim! Edite `/etc/nixos/config/variables.nix`:

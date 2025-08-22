@@ -1,8 +1,12 @@
 { config, pkgs, ... }:
 
+let
+  vars = import ../../config/variables.nix;
+in
+
 {
   boot.loader.systemd-boot.enable = true;
-  boot.loader.systemd-boot.configurationLimit = 2;
+  boot.loader.systemd-boot.configurationLimit = vars.build.rollbackGenerations;
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Performance boot optimizations

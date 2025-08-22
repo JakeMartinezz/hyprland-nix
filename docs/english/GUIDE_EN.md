@@ -77,9 +77,19 @@ Configuration Details:
   Hostname: martinez
   GPU Type: amd
   Laptop: false
+  Bluetooth: false
   Gaming: true
   Development: true
+  Media: true
+  VirtualBox: true
+  Fauxmo/Alexa: true
+  Kanshi (Display Management): true
+  Rollback Generations: 2
+  Auto Updates: true
+  GTK Theme: gruvbox
+  Icon Theme: gruvbox-plus-icons
   Additional Disks: 1 configured
+    • External Disk: /mnt/external (ext4, 931.5G)
   Created: Wed Jul 23 14:32:45 -03 2025
 
 Use this configuration? (Y/n):
@@ -254,6 +264,8 @@ nixos/
 │   │       ├── gaming.nix         🎮 Gaming components
 │   │       └── media.nix          🎵 Media components
 │   └── system/                    ⚙️ SYSTEM
+│       ├── auto-update.nix        ⚙️ Automatic system updates
+│       ├── bluetooth.nix          🟦 Bluetooth configuration
 │       ├── boot.nix               🚀 Boot (XanMod, optimized)
 │       ├── conditional-services.nix 🔄 Conditional services
 │       ├── filesystems.nix        💾 Disks and mounting
@@ -368,6 +380,9 @@ nixos/
     keepOutputs = true;
     keepDerivations = true;
     autoOptimiseStore = true;
+    
+    # System generations
+    rollbackGenerations = 2;
   };
   
   # === SYSTEM SERVICES ===

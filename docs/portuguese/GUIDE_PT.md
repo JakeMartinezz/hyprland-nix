@@ -77,9 +77,19 @@ Detalhes da Configuração:
   Hostname: martinez
   GPU Type: amd
   Laptop: false
+  Bluetooth: false
   Gaming: true
   Development: true
+  Media: true
+  VirtualBox: true
+  Fauxmo/Alexa: true
+  Kanshi (Gerenciamento de Displays): true
+  Gerações de Rollback: 2
+  Atualizações Automáticas: true
+  Tema GTK: gruvbox
+  Tema de Ícones: gruvbox-plus-icons
   Discos Adicionais: 1 configurado
+    • Disco Externo: /mnt/externo (ext4, 931.5G)
   Criado em: Wed Jul 23 14:32:45 -03 2025
 
 Usar esta configuração? (Y/n):
@@ -252,6 +262,8 @@ nixos/
 │   │       ├── gaming.nix         🎮 Componentes gaming
 │   │       └── media.nix          🎵 Componentes mídia
 │   └── system/                    ⚙️ SISTEMA
+│       ├── auto-update.nix        ⚙️ Atualizações automáticas
+│       ├── bluetooth.nix          🟦 Configuração Bluetooth
 │       ├── boot.nix               🚀 Boot (XanMod, Plymouth)
 │       ├── conditional-services.nix 🔄 Serviços condicionais
 │       ├── filesystems.nix        💾 Discos e montagem

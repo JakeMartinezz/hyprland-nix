@@ -116,6 +116,33 @@ MSG_CONFIG_FIXED="✅ Configuration fixed!"
 MSG_SAVE_CORRECTIONS_QUESTION="Do you want to save the corrections to the preset?"
 MSG_SAVE_CORRECTIONS="Save corrections?"
 
+# Security checks
+MSG_SECURITY_CHECK="🔐 Checking security environment..."
+MSG_CONTAINER_DETECTED="⚠️ Running in container. Limited functionality"
+MSG_UEFI_DETECTED="✅ UEFI boot detected"
+MSG_LEGACY_BIOS="⚠️ Legacy BIOS. Some features may not work"
+MSG_SECURE_BOOT_WARNING="⚠️ Secure Boot active. NVIDIA drivers may have issues"
+
+# Connectivity checks
+MSG_CONNECTIVITY_CHECK="🌐 Checking connectivity..."
+MSG_NO_INTERNET="❌ ERROR: No internet connection"
+MSG_CHECK_NETWORK="💡 Check your network connection before continuing"
+MSG_NIXOS_CACHE_SLOW="⚠️ NixOS cache unreachable. Downloads may be very slow"
+MSG_CHECK_FIREWALL="💡 Consider checking firewall/proxy"
+MSG_NIXOS_CACHE_OK="✅ NixOS cache accessible"
+MSG_GITHUB_UNAVAILABLE="⚠️ GitHub unreachable. Dotfiles may fail"
+MSG_GITHUB_OK="✅ GitHub accessible"
+
+# Input validation
+MSG_VALIDATING_INPUT="🔍 Validating user input..."
+MSG_USERNAME_START_LETTER="💡 Must start with letter"
+MSG_USERNAME_LENGTH="❌ ERROR: Username must be 2-32 characters"
+MSG_USERNAME_RESERVED="❌ ERROR: Username '%s' is reserved by system"
+MSG_HOSTNAME_LENGTH_RULE="💡 Maximum 63 characters, cannot start/end with hyphen"
+MSG_HOSTNAME_LENGTH="❌ ERROR: Hostname must be 1-63 characters"
+MSG_USERNAME_OK="✅ Username"
+MSG_HOSTNAME_OK="✅ Hostname"
+
 # Disk detection and configuration
 MSG_DETECTING_DISKS="Detecting additional disks..."
 MSG_ADDITIONAL_DISKS_DETECTED="Additional disks/partitions detected:"

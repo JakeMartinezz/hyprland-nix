@@ -398,6 +398,11 @@ Configuration Details:
   Media: true
   VirtualBox: true
   Fauxmo/Alexa: true
+  Kanshi (Display Management): true
+  Rollback Generations: 2
+  Auto Updates: true
+  GTK Theme: gruvbox
+  Icon Theme: gruvbox-plus-icons
   Additional Disks: 1 configured
     • External Disk: /mnt/external (ext4, 931.5G)
   Created: Wed Jul 23 14:32:45 -03 2025
@@ -464,6 +469,11 @@ Saved configuration found:
   Media: true
   VirtualBox: true
   Fauxmo/Alexa: true
+  Kanshi (Display Management): true
+  Rollback Generations: 2
+  Auto Updates: true
+  GTK Theme: gruvbox
+  Icon Theme: gruvbox-plus-icons
   Additional Disks: 1 configured
     Disk details:
       • disco1:

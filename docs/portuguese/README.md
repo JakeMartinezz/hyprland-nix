@@ -36,6 +36,8 @@ nixos/
 │   │   ├── gaming-on-demand.nix   # Otimizações de gaming sob demanda
 │   │   ├── git.nix                # Configuração do Git
 │   │   ├── gtk.nix                # Temas GTK
+│   │   ├── hypr-workspace-manager.nix # Gerenciamento de serviços baseado em monitores
+│   │   ├── kanshi.nix             # Configuração de displays/monitores
 │   │   └── zsh.nix                # Shell Zsh com prompt personalizado
 │   │
 │   ├── 📦 packages/               # CAMADA DE GERENCIAMENTO DE PACOTES
@@ -49,9 +51,12 @@ nixos/
 │   │       ├── core.nix           # Ferramentas fundamentais do sistema
 │   │       ├── desktop.nix        # Ambiente desktop (Hyprland, Nautilus)
 │   │       ├── gaming.nix         # Componentes de gaming do sistema
+│   │       ├── laptop.nix         # Pacotes específicos para laptop
 │   │       └── media.nix          # Componentes de mídia do sistema
 │   │
 │   └── ⚙️ system/                 # Módulos de configuração do sistema
+│       ├── auto-update.nix        # Atualizações automáticas do sistema
+│       ├── bluetooth.nix          # Configuração Bluetooth
 │       ├── boot.nix               # Configuração de boot (XanMod, Plymouth)
 │       ├── conditional-services.nix # Serviços condicionais (VirtualBox, Fauxmo, WoL)
 │       ├── filesystems.nix        # Configuração centralizada de filesystems

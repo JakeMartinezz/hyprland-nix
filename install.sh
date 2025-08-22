@@ -145,6 +145,102 @@ check_execution_environment() {
     fi
 }
 
+# Function to check security environment
+check_security_environment() {
+    echo -e "${BLUE}$MSG_SECURITY_CHECK${NC}"
+    
+    # Check if running in container
+    if [[ -f /.dockerenv ]] || [[ -n "$container" ]]; then
+        echo -e "${YELLOW}$MSG_CONTAINER_DETECTED${NC}"
+    fi
+    
+    # Check boot mode
+    if [[ -d /sys/firmware/efi ]]; then
+        echo -e "${GREEN}$MSG_UEFI_DETECTED${NC}"
+    else
+        echo -e "${YELLOW}$MSG_LEGACY_BIOS${NC}"
+    fi
+    
+    # Check secure boot
+    if command -v mokutil >/dev/null && mokutil --sb-state 2>/dev/null | grep -q "enabled"; then
+        echo -e "${YELLOW}$MSG_SECURE_BOOT_WARNING${NC}"
+    fi
+}
+
+# Function to check internet connectivity
+check_internet_connection() {
+    echo -e "${BLUE}$MSG_CONNECTIVITY_CHECK${NC}"
+    
+    # Test basic connectivity
+    if ! ping -c 1 -W 5 8.8.8.8 >/dev/null 2>&1; then
+        echo -e "${RED}$MSG_NO_INTERNET${NC}"
+        echo -e "${YELLOW}$MSG_CHECK_NETWORK${NC}"
+        exit 1
+    fi
+    
+    # Test NixOS cache accessibility
+    if ! curl -s --connect-timeout 10 --max-time 15 https://cache.nixos.org >/dev/null 2>&1; then
+        echo -e "${YELLOW}$MSG_NIXOS_CACHE_SLOW${NC}"
+        echo -e "${YELLOW}$MSG_CHECK_FIREWALL${NC}"
+    else
+        echo -e "${GREEN}$MSG_NIXOS_CACHE_OK${NC}"
+    fi
+    
+    # Test GitHub connectivity (for dotfiles)
+    if ! curl -s --connect-timeout 5 --max-time 10 https://github.com >/dev/null 2>&1; then
+        echo -e "${YELLOW}$MSG_GITHUB_UNAVAILABLE${NC}"
+    else
+        echo -e "${GREEN}$MSG_GITHUB_OK${NC}"
+    fi
+}
+
+# Function to validate user input
+validate_user_input() {
+    local username="$1"
+    local hostname="$2"
+    
+    echo -e "${BLUE}$MSG_VALIDATING_INPUT${NC}"
+    
+    # Validate username
+    if [[ ! "$username" =~ ^[a-z][-a-z0-9]*$ ]]; then
+        echo -e "${RED}$MSG_INVALID_USERNAME '$username'${NC}"
+        echo -e "${YELLOW}$MSG_USERNAME_RULES${NC}"
+        echo -e "${YELLOW}$MSG_USERNAME_START_LETTER${NC}"
+        return 1
+    fi
+    
+    if [[ ${#username} -lt 2 || ${#username} -gt 32 ]]; then
+        echo -e "${RED}$MSG_USERNAME_LENGTH${NC}"
+        return 1
+    fi
+    
+    # Check reserved usernames
+    local reserved=("root" "nixos" "admin" "test" "guest" "daemon" "nobody" "systemd")
+    for word in "${reserved[@]}"; do
+        if [[ "$username" == "$word" ]]; then
+            echo -e "${RED}$MSG_USERNAME_RESERVED '$word'${NC}"
+            return 1
+        fi
+    done
+    
+    # Validate hostname
+    if [[ ! "$hostname" =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
+        echo -e "${RED}$MSG_INVALID_HOSTNAME '$hostname'${NC}"
+        echo -e "${YELLOW}$MSG_HOSTNAME_RULES${NC}"
+        echo -e "${YELLOW}$MSG_HOSTNAME_LENGTH_RULE${NC}"
+        return 1
+    fi
+    
+    if [[ ${#hostname} -lt 1 || ${#hostname} -gt 63 ]]; then
+        echo -e "${RED}$MSG_HOSTNAME_LENGTH${NC}"
+        return 1
+    fi
+    
+    echo -e "${GREEN}$MSG_USERNAME_OK: $username${NC}"
+    echo -e "${GREEN}$MSG_HOSTNAME_OK: $hostname${NC}"
+    return 0
+}
+
 # Function to check system dependencies
 check_dependencies() {
     echo -e "${BLUE}$MSG_DEPENDENCY_CHECK${NC}"
@@ -813,6 +909,8 @@ print_header
 # System checks
 check_nixos
 check_execution_environment
+check_internet_connection
+check_security_environment
 check_dependencies
 check_nixos_rebuild
 

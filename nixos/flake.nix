@@ -83,7 +83,6 @@
              ./configuration.nix
       	     ./hardware-configuration.nix
              ./modules/home/custom-scripts.nix
-             ./modules/home/gaming-on-demand.nix
 
               home-manager.nixosModules.home-manager
             {

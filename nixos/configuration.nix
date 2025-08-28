@@ -31,6 +31,8 @@ in
       ./modules/packages/system/media.nix
     ] ++ lib.optionals vars.features.services.autoUpdate.enable [
       ./modules/system/auto-update.nix
+    ] ++ lib.optionals vars.features.services.docker.enable [
+      ./modules/system/docker.nix
     ];
 
 

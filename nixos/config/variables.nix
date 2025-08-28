@@ -107,6 +107,14 @@
       kanshi = {
         enable = true;
       };
+      
+      # Docker containerization
+      docker = {
+        enable = false;
+        portainer = {
+          enable = false;
+        };
+      };
     };
     
     # Network features

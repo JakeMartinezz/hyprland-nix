@@ -973,6 +973,8 @@ save_config_preset() {
     echo "polkit_enable=$polkit_enable" >> "$PRESET_FILE"
     echo "fauxmo_enable=$fauxmo_enable" >> "$PRESET_FILE"
     echo "kanshi_enable=$kanshi_enable" >> "$PRESET_FILE"
+    echo "docker_enable=$docker_enable" >> "$PRESET_FILE"
+    echo "portainer_enable=$portainer_enable" >> "$PRESET_FILE"
     echo "wake_on_lan_enable=$wake_on_lan_enable" >> "$PRESET_FILE"
     echo "gtk_theme=$gtk_theme" >> "$PRESET_FILE"
     echo "gtk_icon=$gtk_icon" >> "$PRESET_FILE"
@@ -1040,8 +1042,8 @@ validate_auto_update() {
 # Helper function to validate and fix boolean values
 validate_boolean_values() {
     local has_errors=false
-    local boolean_vars=("laptop_enable" "bluetooth_enable" "gaming_enable" "development_enable" "media_enable" "virtualbox_enable" "polkit_enable" "fauxmo_enable" "kanshi_enable" "wake_on_lan_enable")
-    local boolean_messages=("$MSG_LAPTOP" "$MSG_BLUETOOTH" "$MSG_GAMING" "$MSG_DEVELOPMENT" "$MSG_MEDIA" "$MSG_VIRTUALBOX" "$MSG_POLKIT" "$MSG_FAUXMO" "$MSG_KANSHI" "$MSG_WAKE_ON_LAN")
+    local boolean_vars=("laptop_enable" "bluetooth_enable" "gaming_enable" "development_enable" "media_enable" "virtualbox_enable" "polkit_enable" "fauxmo_enable" "kanshi_enable" "docker_enable" "portainer_enable" "wake_on_lan_enable")
+    local boolean_messages=("$MSG_LAPTOP" "$MSG_BLUETOOTH" "$MSG_GAMING" "$MSG_DEVELOPMENT" "$MSG_MEDIA" "$MSG_VIRTUALBOX" "$MSG_POLKIT" "$MSG_FAUXMO" "$MSG_KANSHI" "$MSG_DOCKER" "$MSG_PORTAINER" "$MSG_WAKE_ON_LAN")
     
     for i in "${!boolean_vars[@]}"; do
         local var_name="${boolean_vars[$i]}"
@@ -1484,7 +1486,17 @@ collect_config() {
     laptop_enable=$(ask_yes_no "$MSG_LAPTOP")
     bluetooth_enable=$(ask_yes_no "$MSG_BLUETOOTH")
     gaming_enable=$(ask_yes_no "$MSG_GAMING")
-    development_enable=$(ask_yes_no "$MSG_DEVELOPMENT")  
+    development_enable=$(ask_yes_no "$MSG_DEVELOPMENT")
+    
+    # Docker Configuration (right after development tools)
+    docker_enable=$(ask_yes_no "$MSG_DOCKER")
+    if [[ "$docker_enable" == "true" ]]; then
+        # Ask about Portainer only if Docker is enabled
+        portainer_enable=$(ask_yes_no "$MSG_PORTAINER")
+    else
+        portainer_enable="false"
+    fi
+    
     media_enable=$(ask_yes_no "$MSG_MEDIA")
     virtualbox_enable=$(ask_yes_no "$MSG_VIRTUALBOX")
     polkit_enable=$(ask_yes_no "$MSG_POLKIT" "y")
@@ -1553,6 +1565,18 @@ collect_config() {
         esac
     done
 
+    # Docker Configuration
+    echo
+    echo -e "${BLUE}$MSG_DOCKER_SELECTION${NC}"
+    docker_enable=$(ask_yes_no "$MSG_DOCKER")
+    
+    if [[ "$docker_enable" == "true" ]]; then
+        # Ask about Portainer only if Docker is enabled
+        portainer_enable=$(ask_yes_no "$MSG_PORTAINER")
+    else
+        portainer_enable="false"
+    fi
+
     # Detect and configure additional disks
     detect_additional_disks
     
@@ -1577,6 +1601,10 @@ show_config_review() {
     echo -e "  ${YELLOW}Polkit GNOME:${NC} $polkit_enable"
     echo -e "  ${YELLOW}Fauxmo/Alexa:${NC} $fauxmo_enable"
     echo -e "  ${YELLOW}Kanshi:${NC} $kanshi_enable"
+    echo -e "  ${YELLOW}Docker:${NC} $docker_enable"
+    if [[ "$docker_enable" == "true" ]]; then
+        echo -e "  ${YELLOW}Portainer:${NC} $portainer_enable"
+    fi
     echo -e "  ${YELLOW}Wake on LAN:${NC} $wake_on_lan_enable"
     echo -e "  ${YELLOW}GTK Theme:${NC} $gtk_theme"
     echo -e "  ${YELLOW}Icon Theme:${NC} $gtk_icon"
@@ -1758,6 +1786,14 @@ cat > /tmp/variables.nix << EOF
       # Kanshi display management
       kanshi = {
         enable = $kanshi_enable;
+      };
+      
+      # Docker containerization
+      docker = {
+        enable = $docker_enable;
+        portainer = {
+          enable = $portainer_enable;
+        };
       };
     };
     

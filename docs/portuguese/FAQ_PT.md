@@ -113,10 +113,17 @@ Perguntas e respostas comuns sobre o Instalador de Configuração NixOS e config
 **R:** Sim! Edite `/etc/nixos/config/variables.nix`:
 ```nix
 features = {
-  gaming.enable = false;        # Desabilitar pacotes de gaming
-  development.enable = false;   # Desabilitar ferramentas de dev
-  media.enable = false;         # Desabilitar aplicações de mídia
-  services.virtualbox.enable = false;  # Desabilitar VirtualBox
+  packages = {
+    gaming.enable = false;        # Desabilitar pacotes de gaming
+    development.enable = false;   # Desabilitar ferramentas de dev
+    media.enable = false;         # Desabilitar aplicações de mídia
+  };
+  services = {
+    virtualbox.enable = false;    # Desabilitar VirtualBox
+    fauxmo.enable = false;        # Desabilitar integração Alexa
+    kanshi.enable = false;        # Desabilitar gerenciamento de displays
+    docker.enable = false;        # Desabilitar containerização Docker
+  };
 };
 ```
 Então execute: `rebuild`
@@ -269,12 +276,7 @@ in {
 ### **P: Como habilito otimizações de gaming?**
 **R:** Múltiplas maneiras:
 1. **Durante instalação**: Habilitar pacotes de gaming
-2. **Scripts sob demanda**: 
-   ```bash
-   gaming-mode-on   # Habilitar otimizações
-   gaming-mode-off  # Restaurar padrões
-   ```
-3. **Feature flag**: Definir `gaming.enable = true;` em `variables.nix`
+2. **Feature flag**: Definir `gaming.enable = true;` em `variables.nix`
 
 ### **P: Quais jogos funcionam bem?**
 **R:** Grande compatibilidade com:
@@ -290,6 +292,21 @@ in {
 - **Ferramentas de áudio**: Configuração de áudio profissional com PipeWire
 - **Performance**: Otimizado para taxas de quadro estáveis
 - **Multi-monitor**: Excelente suporte para configurações de streaming
+
+### **P: Esta configuração suporta containerização Docker?**
+**R:** Sim! O suporte Docker inclui:
+- **Docker Rootless**: Segurança aprimorada por padrão
+- **Docker Compose**: Para aplicações multi-container
+- **Auto-prune**: Limpeza semanal para economizar espaço em disco
+- **Portainer**: Interface web opcional para gerenciamento Docker
+- **Habilitar durante instalação** ou definir `docker.enable = true;` em `variables.nix`
+
+### **P: Como gerencio containers Docker?**
+**R:** Várias opções disponíveis:
+- **Linha de comando**: Comandos `docker` padrão
+- **Portainer**: Interface web em `http://localhost:9000` (se habilitado)
+- **Docker Compose**: Para configurações multi-container complexas
+- **Gerenciamento de serviços**: Reinício automático de containers no boot
 
 ## 🔧 Solução de Problemas
 

@@ -12,8 +12,9 @@ This guide helps you resolve common issues encountered during installation and c
 6. [Network and Download Issues](#-network-and-download-issues)
 7. [Permission and Access Issues](#-permission-and-access-issues)
 8. [Service Management Issues](#-service-management-issues)
-9. [Rollback and Recovery Procedures](#-rollback-and-recovery-procedures)
-10. [Advanced Debugging](#-advanced-debugging)
+9. [Docker and Containerization Issues](#-docker-and-containerization-issues)
+10. [Rollback and Recovery Procedures](#-rollback-and-recovery-procedures)
+11. [Advanced Debugging](#-advanced-debugging)
 
 ## 🚀 Installation Issues
 
@@ -149,18 +150,13 @@ nix-shell -p git curl coreutils
 - Driver errors in logs
 
 **Solutions:**
-1. **Enable Gaming Mode:**
-   ```bash
-   gaming-mode-on
-   ```
-
-2. **Check Driver Loading:**
+1. **Check Driver Loading:**
    ```bash
    lsmod | grep amdgpu
    dmesg | grep amdgpu
    ```
 
-3. **Update Configuration:**
+2. **Update Configuration:**
    ```bash
    # Ensure AMD drivers are properly configured
    sudo nano /etc/nixos/config/variables.nix
@@ -547,6 +543,282 @@ sudo chmod 755 /etc/nixos
 3. **Manual Start:**
    ```bash
    /run/current-system/sw/libexec/polkit-gnome-authentication-agent-1 &
+   ```
+
+## 🐳 Docker and Containerization Issues
+
+### **Docker Service Problems**
+
+#### Problem: Docker service won't start
+**Symptoms:** 
+- `docker ps` command fails
+- "Cannot connect to Docker daemon" errors
+- Service fails to start automatically
+
+**Solutions:**
+1. **Check Docker Service Status:**
+   ```bash
+   systemctl status docker
+   systemctl --user status docker  # For rootless mode
+   ```
+
+2. **Start Docker Service:**
+   ```bash
+   sudo systemctl start docker
+   sudo systemctl enable docker
+   ```
+
+3. **Check User Permissions:**
+   ```bash
+   # Add user to docker group
+   sudo usermod -aG docker $USER
+   # Logout and login again for changes to take effect
+   ```
+
+4. **For Rootless Docker:**
+   ```bash
+   # Check rootless setup
+   systemctl --user status docker
+   export DOCKER_HOST=unix:///run/user/$(id -u)/docker.sock
+   ```
+
+#### Problem: Docker containers won't start
+**Symptoms:**
+- Containers exit immediately
+- "No such file or directory" errors
+- Permission denied errors
+
+**Solutions:**
+1. **Check Container Logs:**
+   ```bash
+   docker logs container-name
+   docker inspect container-name
+   ```
+
+2. **Check System Resources:**
+   ```bash
+   df -h  # Disk space
+   free -h  # Memory
+   ```
+
+3. **Restart Docker Service:**
+   ```bash
+   sudo systemctl restart docker
+   ```
+
+### **Portainer Issues**
+
+#### Problem: Portainer container won't start
+**Symptoms:**
+- Can't access Portainer web UI at localhost:9000
+- Portainer service failed status
+- Port binding conflicts
+
+**Solutions:**
+1. **Check Portainer Service Status:**
+   ```bash
+   systemctl status portainer
+   journalctl -u portainer -f
+   ```
+
+2. **Check Port Availability:**
+   ```bash
+   netstat -tulpn | grep :9000
+   netstat -tulpn | grep :9443
+   ```
+
+3. **Manual Portainer Start:**
+   ```bash
+   # Stop service first
+   sudo systemctl stop portainer
+   
+   # Remove existing container
+   docker stop portainer 2>/dev/null || true
+   docker rm portainer 2>/dev/null || true
+   
+   # Start manually to check for errors
+   docker run -d \
+     --name portainer \
+     --restart=always \
+     -p 9000:9000 \
+     -p 9443:9443 \
+     -v /var/run/docker.sock:/var/run/docker.sock \
+     -v portainer_data:/data \
+     portainer/portainer-ce:latest
+   ```
+
+4. **Check Firewall:**
+   ```bash
+   # Verify firewall ports are open
+   sudo iptables -L | grep -E "(9000|9443)"
+   ```
+
+#### Problem: Can't access Portainer web interface
+**Solutions:**
+1. **Check Service Status:**
+   ```bash
+   docker ps | grep portainer
+   curl -I http://localhost:9000
+   ```
+
+2. **Check Network Configuration:**
+   ```bash
+   # Test port binding
+   netstat -tulpn | grep portainer
+   ss -tulpn | grep :9000
+   ```
+
+3. **Browser Access Issues:**
+   - Try `http://localhost:9000` instead of `127.0.0.1:9000`
+   - Clear browser cache and cookies
+   - Try different browser or incognito mode
+   - Check browser console for JavaScript errors
+
+### **Docker Build Issues**
+
+#### Problem: Docker builds fail with permission errors
+**Solutions:**
+1. **Check BuildKit Settings:**
+   ```bash
+   # Verify BuildKit is enabled
+   echo $DOCKER_BUILDKIT
+   docker buildx version
+   ```
+
+2. **Fix File Permissions:**
+   ```bash
+   # In Dockerfile directory
+   chmod +r Dockerfile
+   sudo chown -R $USER:$USER .
+   ```
+
+3. **Use Buildx for Complex Builds:**
+   ```bash
+   docker buildx build --platform linux/amd64 -t myapp .
+   ```
+
+#### Problem: Out of disk space during builds
+**Solutions:**
+1. **Clean Docker System:**
+   ```bash
+   # Remove unused data (automatic with auto-prune enabled)
+   docker system prune -af
+   
+   # Check disk usage
+   docker system df
+   ```
+
+2. **Check Auto-Prune Configuration:**
+   ```bash
+   # Verify auto-prune is working
+   systemctl list-timers | grep docker-prune
+   journalctl -u docker-prune --since="1 week ago"
+   ```
+
+### **Docker Networking Issues**
+
+#### Problem: Containers can't reach internet
+**Solutions:**
+1. **Check Docker Network:**
+   ```bash
+   docker network ls
+   docker network inspect bridge
+   ```
+
+2. **Check System Network:**
+   ```bash
+   # Check DNS resolution
+   docker run --rm busybox nslookup google.com
+   
+   # Check routing
+   ip route show
+   ```
+
+3. **Restart Network Services:**
+   ```bash
+   sudo systemctl restart NetworkManager
+   sudo systemctl restart docker
+   ```
+
+#### Problem: Port conflicts between containers
+**Solutions:**
+1. **Check Port Usage:**
+   ```bash
+   netstat -tulpn | grep :PORT_NUMBER
+   docker ps --format "table {{.Names}}\t{{.Ports}}"
+   ```
+
+2. **Use Different Ports:**
+   ```bash
+   # Map to different host port
+   docker run -p 8080:80 nginx  # Instead of 80:80
+   ```
+
+3. **Use Docker Networks:**
+   ```bash
+   # Create custom network
+   docker network create mynetwork
+   docker run --network mynetwork myapp
+   ```
+
+### **Docker Compose Issues**
+
+#### Problem: Docker Compose services fail to start
+**Solutions:**
+1. **Check Compose Syntax:**
+   ```bash
+   docker-compose config
+   docker-compose validate
+   ```
+
+2. **Check Service Dependencies:**
+   ```bash
+   # Start services individually
+   docker-compose up service-name
+   
+   # Check logs
+   docker-compose logs service-name
+   ```
+
+3. **Update Compose File:**
+   ```bash
+   # Use compatible version
+   version: '3.8'  # Instead of newer versions
+   ```
+
+### **Docker Storage Issues**
+
+#### Problem: Volume mounting failures
+**Solutions:**
+1. **Check Volume Permissions:**
+   ```bash
+   # Create volume with correct permissions
+   docker volume create --driver local myvolume
+   
+   # Check existing volumes
+   docker volume ls
+   docker volume inspect myvolume
+   ```
+
+2. **Fix Host Mount Permissions:**
+   ```bash
+   # For host volume mounts
+   sudo chmod 755 /host/path
+   sudo chown -R 1000:1000 /host/path  # Match container user
+   ```
+
+#### Problem: Container data not persisting
+**Solutions:**
+1. **Verify Volume Configuration:**
+   ```bash
+   # Check if volume is properly mounted
+   docker inspect container-name | grep -A 10 "Mounts"
+   ```
+
+2. **Use Named Volumes:**
+   ```bash
+   # Instead of anonymous volumes
+   docker run -v mydata:/app/data myapp
    ```
 
 ## 🔄 Rollback and Recovery Procedures

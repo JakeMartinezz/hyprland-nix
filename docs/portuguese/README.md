@@ -33,7 +33,6 @@ nixos/
 ├── 🧩 modules/                    # CAMADA MODULAR PRINCIPAL
 │   ├── 🏠 home/                   # Módulos do Home Manager (usuário)
 │   │   ├── custom-scripts.nix     # Scripts personalizados (rebuild/clean/update)
-│   │   ├── gaming-on-demand.nix   # Otimizações de gaming sob demanda
 │   │   ├── git.nix                # Configuração do Git
 │   │   ├── gtk.nix                # Temas GTK
 │   │   ├── hypr-workspace-manager.nix # Gerenciamento de serviços baseado em monitores
@@ -59,6 +58,7 @@ nixos/
 │       ├── bluetooth.nix          # Configuração Bluetooth
 │       ├── boot.nix               # Configuração de boot (XanMod, Plymouth)
 │       ├── conditional-services.nix # Serviços condicionais (VirtualBox, Fauxmo, WoL)
+│       ├── docker.nix             # Containerização Docker com Portainer
 │       ├── filesystems.nix        # Configuração centralizada de filesystems
 │       ├── fonts.nix              # Fontes do sistema
 │       ├── gpu.nix                # Configuração GPU (AMD/NVIDIA) com feature flags
@@ -70,7 +70,6 @@ nixos/
 ├── ⚙️ configuration.nix           # Configuração principal do sistema
 ├── 🏠 home.nix                    # Configuração principal do Home Manager
 ├── 🚀 install.sh                  # Instalador inteligente e interativo
-├── ⚙️ variables.sh                # Configurações customizáveis do instalador
 └── 📋 preset.conf                 # Configuração salva (gerado automaticamente)
 ```
 
@@ -213,12 +212,6 @@ home/development.nix: vscode, claude-code, yarn   # Ferramentas específicas do 
 
 ## 🎮 Recursos Específicos
 
-### **Gaming on Demand**
-```nix
-# gaming-on-demand.nix - Sistema inteligente de otimização
-gaming-mode-on  → Aplica sysctls de performance + CPU governor
-gaming-mode-off → Restaura configurações padrão
-```
 
 ### **Configuração Avançada de Gaming**
 ```nix
@@ -283,54 +276,6 @@ clean   → GC + optimization + backup para ${backupPath}
 # IP detectado automaticamente na inicialização do serviço
 ```
 
-## ⚙️ Sistema de Configuração Customizável (variables.sh)
-
-Esta configuração inclui um sistema inovador de personalização através do arquivo `variables.sh`, que permite customizar o comportamento do instalador sem modificar o código principal.
-
-### **🔧 Configurações Disponíveis**
-
-O arquivo `variables.sh` permite personalizar:
-
-```bash
-# Repositórios e URLs
-DOTFILES_REPO_URL="https://github.com/SeuUsuario/seu-repo"
-DOTFILES_BRANCH="main"
-
-# Paths do sistema
-NIXOS_CONFIG_PATH="/etc/nixos"              # Diretório de configuração
-MOUNT_POINT_PREFIX="/mnt"                   # Prefixo para pontos de montagem
-BACKUP_DIR_PREFIX="/etc/nixos.backup"       # Diretório para backups
-
-# Configurações padrão
-DEFAULT_USERNAME="${USER:-jake}"            # Username padrão
-DEFAULT_HOSTNAME="${HOSTNAME:-nixos}"       # Hostname padrão
-
-# Configurações técnicas
-DEFAULT_MOUNT_OPTIONS="defaults,x-gvfs-show"  # Opções de montagem
-MIN_FREE_SPACE_MB=2048                         # Espaço mínimo necessário
-NETWORK_TIMEOUT=30                             # Timeout para operações de rede
-```
-
-### **✨ Benefícios do Sistema**
-
-- **🎯 Personalização Fácil**: Edite apenas um arquivo para customizar o instalador
-- **🔄 Backward Compatibility**: Funciona com ou sem `variables.sh`
-- **🛡️ Segurança**: Valores padrão garantem funcionamento mesmo sem customização
-- **📦 Portabilidade**: Configurações separadas do código principal
-- **🚀 Manutenibilidade**: Updates no instalador não afetam suas customizações
-
-### **📝 Como Usar**
-
-1. **Personalizar (Opcional)**: Edite o arquivo `variables.sh` com suas preferências
-2. **Executar Instalador**: O script detecta automaticamente suas configurações
-3. **Backup Automático**: Suas customizações são preservadas em updates
-
-```bash
-# Exemplo de uso
-cp variables.sh variables.sh.backup  # Backup das suas configurações
-# Editar variables.sh conforme necessário
-./install.sh  # O instalador usa suas configurações automaticamente
-```
 
 ## 🚀 Início Rápido
 

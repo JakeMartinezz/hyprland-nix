@@ -29,34 +29,26 @@ fi
 # Get script directory to find language files
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Load configuration variables
-VARIABLES_FILE="${SCRIPT_DIR}/variables.sh"
-if [[ -f "$VARIABLES_FILE" ]]; then
-    echo -e "${BLUE}🔧 Carregando configurações customizadas...${NC}"
-    source "$VARIABLES_FILE"
-else
-    echo -e "${YELLOW}⚠️ Usando configurações padrão (variables.sh não encontrado)${NC}"
-    # Definir valores padrão inline se variables.sh não existir
-    DOTFILES_REPO_URL="https://github.com/JakeMartinezz/hyprdots-nix"
-    DOTFILES_BRANCH="main"
-    NIXOS_CONFIG_PATH="/etc/nixos"
-    MOUNT_POINT_PREFIX="/mnt"
-    BACKUP_DIR_PREFIX="/etc/nixos.backup"
-    DEFAULT_USERNAME="${USER:-jake}"
-    DEFAULT_HOSTNAME="${HOSTNAME:-nixos}"
-    DEFAULT_USER_DESCRIPTION="NixOS User"
-    NETWORK_TIMEOUT=30
-    MAX_RETRY_ATTEMPTS=3
-    PRESET_FILENAME="preset.conf"
-    DEFAULT_LANGUAGE="pt"
-    DEFAULT_LOCALE="pt_BR.UTF-8"
-    DEFAULT_TIMEZONE="America/Sao_Paulo"
-    DEFAULT_MOUNT_OPTIONS="defaults,x-gvfs-show"
-    MIN_FREE_SPACE_MB=2048
-    INSTALLER_TITLE="NixOS Configuration Installer"
-    WELCOME_MESSAGE="Bem-vindo ao instalador inteligente do NixOS!"
-    SUCCESS_MESSAGE="Instalação concluída com sucesso!"
-fi
+# Configuration variables
+DOTFILES_REPO_URL="https://github.com/JakeMartinezz/hyprdots-nix"
+DOTFILES_BRANCH="main"
+NIXOS_CONFIG_PATH="/etc/nixos"
+MOUNT_POINT_PREFIX="/mnt"
+BACKUP_DIR_PREFIX="/etc/nixos.backup"
+DEFAULT_USERNAME="${USER:-jake}"
+DEFAULT_HOSTNAME="${HOSTNAME:-nixos}"
+DEFAULT_USER_DESCRIPTION="NixOS User"
+NETWORK_TIMEOUT=30
+MAX_RETRY_ATTEMPTS=3
+PRESET_FILENAME="preset.conf"
+DEFAULT_LANGUAGE="pt"
+DEFAULT_LOCALE="pt_BR.UTF-8"
+DEFAULT_TIMEZONE="America/Sao_Paulo"
+DEFAULT_MOUNT_OPTIONS="defaults,x-gvfs-show"
+MIN_FREE_SPACE_MB=2048
+INSTALLER_TITLE="NixOS Configuration Installer"
+WELCOME_MESSAGE="Bem-vindo ao instalador inteligente do NixOS!"
+SUCCESS_MESSAGE="Instalação concluída com sucesso!"
 
 # Load language strings from external files
 if [[ "$LANG" == "pt_BR.UTF-8" ]]; then

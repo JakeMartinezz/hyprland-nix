@@ -122,6 +122,7 @@ features = {
     virtualbox.enable = false;    # Disable VirtualBox
     fauxmo.enable = false;        # Disable Alexa integration
     kanshi.enable = false;        # Disable display management
+    docker.enable = false;        # Disable Docker containerization
   };
 };
 ```
@@ -275,12 +276,7 @@ in {
 ### **Q: How do I enable gaming optimizations?**
 **A:** Multiple ways:
 1. **During installation**: Enable gaming packages
-2. **On-demand scripts**: 
-   ```bash
-   gaming-mode-on   # Enable optimizations
-   gaming-mode-off  # Restore defaults
-   ```
-3. **Feature flag**: Set `gaming.enable = true;` in `variables.nix`
+2. **Feature flag**: Set `gaming.enable = true;` in `variables.nix`
 
 ### **Q: Which games work well?**
 **A:** Great compatibility with:
@@ -296,6 +292,21 @@ in {
 - **Audio tools**: Professional audio setup with PipeWire
 - **Performance**: Optimized for stable frame rates
 - **Multi-monitor**: Excellent support for streaming setups
+
+### **Q: Does this support Docker containerization?**
+**A:** Yes! Docker support includes:
+- **Rootless Docker**: Enhanced security by default
+- **Docker Compose**: For multi-container applications
+- **Auto-prune**: Weekly cleanup to save disk space
+- **Portainer**: Optional web-based Docker management UI
+- **Enable during installation** or set `docker.enable = true;` in `variables.nix`
+
+### **Q: How do I manage Docker containers?**
+**A:** Several options available:
+- **Command line**: Standard `docker` commands
+- **Portainer**: Web UI at `http://localhost:9000` (if enabled)
+- **Docker Compose**: For complex multi-container setups
+- **Service management**: Automatic container restart on boot
 
 ## 🔧 Troubleshooting
 

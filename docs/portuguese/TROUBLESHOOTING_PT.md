@@ -12,8 +12,9 @@ Este guia ajuda você a resolver problemas comuns encontrados durante a instala�
 6. [Problemas de Rede e Download](#-problemas-de-rede-e-download)
 7. [Problemas de Permissão e Acesso](#-problemas-de-permissão-e-acesso)
 8. [Problemas de Gerenciamento de Serviços](#-problemas-de-gerenciamento-de-serviços)
-9. [Procedimentos de Rollback e Recuperação](#-procedimentos-de-rollback-e-recuperação)
-10. [Debug Avançado](#-debug-avançado)
+9. [Problemas de Docker e Containerização](#-problemas-de-docker-e-containerização)
+10. [Procedimentos de Rollback e Recuperação](#-procedimentos-de-rollback-e-recuperação)
+11. [Debug Avançado](#-debug-avançado)
 
 ## 🚀 Problemas de Instalação
 
@@ -156,18 +157,13 @@ nix-shell -p git curl coreutils
 - Erros de driver nos logs
 
 **Soluções:**
-1. **Ativar Modo Gaming:**
-   ```bash
-   gaming-mode-on
-   ```
-
-2. **Verificar Carregamento do Driver:**
+1. **Verificar Carregamento do Driver:**
    ```bash
    lsmod | grep amdgpu
    dmesg | grep amdgpu
    ```
 
-3. **Atualizar Configuração:**
+2. **Atualizar Configuração:**
    ```bash
    # Garantir que drivers AMD estão configurados corretamente
    sudo nano /etc/nixos/config/variables.nix
@@ -483,6 +479,282 @@ ls -la /etc/nixos/
 sudo chown -R root:root /etc/nixos
 sudo chmod 755 /etc/nixos
 ```
+
+## 🐳 Problemas de Docker e Containerização
+
+### **Problemas de Serviço Docker**
+
+#### Problema: Serviço Docker não inicia
+**Sintomas:** 
+- Comando `docker ps` falha
+- Erros "Cannot connect to Docker daemon"
+- Serviço falha ao iniciar automaticamente
+
+**Soluções:**
+1. **Verificar Status do Serviço Docker:**
+   ```bash
+   systemctl status docker
+   systemctl --user status docker  # Para modo rootless
+   ```
+
+2. **Iniciar Serviço Docker:**
+   ```bash
+   sudo systemctl start docker
+   sudo systemctl enable docker
+   ```
+
+3. **Verificar Permissões do Usuário:**
+   ```bash
+   # Adicionar usuário ao grupo docker
+   sudo usermod -aG docker $USER
+   # Fazer logout e login novamente para mudanças terem efeito
+   ```
+
+4. **Para Docker Rootless:**
+   ```bash
+   # Verificar configuração rootless
+   systemctl --user status docker
+   export DOCKER_HOST=unix:///run/user/$(id -u)/docker.sock
+   ```
+
+#### Problema: Containers Docker não iniciam
+**Sintomas:**
+- Containers saem imediatamente
+- Erros "No such file or directory"
+- Erros de permissão negada
+
+**Soluções:**
+1. **Verificar Logs do Container:**
+   ```bash
+   docker logs nome-container
+   docker inspect nome-container
+   ```
+
+2. **Verificar Recursos do Sistema:**
+   ```bash
+   df -h  # Espaço em disco
+   free -h  # Memória
+   ```
+
+3. **Reiniciar Serviço Docker:**
+   ```bash
+   sudo systemctl restart docker
+   ```
+
+### **Problemas com Portainer**
+
+#### Problema: Container Portainer não inicia
+**Sintomas:**
+- Não é possível acessar interface web Portainer em localhost:9000
+- Status do serviço Portainer falhou
+- Conflitos de binding de porta
+
+**Soluções:**
+1. **Verificar Status do Serviço Portainer:**
+   ```bash
+   systemctl status portainer
+   journalctl -u portainer -f
+   ```
+
+2. **Verificar Disponibilidade de Porta:**
+   ```bash
+   netstat -tulpn | grep :9000
+   netstat -tulpn | grep :9443
+   ```
+
+3. **Inicialização Manual do Portainer:**
+   ```bash
+   # Parar serviço primeiro
+   sudo systemctl stop portainer
+   
+   # Remover container existente
+   docker stop portainer 2>/dev/null || true
+   docker rm portainer 2>/dev/null || true
+   
+   # Iniciar manualmente para verificar erros
+   docker run -d \
+     --name portainer \
+     --restart=always \
+     -p 9000:9000 \
+     -p 9443:9443 \
+     -v /var/run/docker.sock:/var/run/docker.sock \
+     -v portainer_data:/data \
+     portainer/portainer-ce:latest
+   ```
+
+4. **Verificar Firewall:**
+   ```bash
+   # Verificar se portas do firewall estão abertas
+   sudo iptables -L | grep -E "(9000|9443)"
+   ```
+
+#### Problema: Não é possível acessar interface web Portainer
+**Soluções:**
+1. **Verificar Status do Serviço:**
+   ```bash
+   docker ps | grep portainer
+   curl -I http://localhost:9000
+   ```
+
+2. **Verificar Configuração de Rede:**
+   ```bash
+   # Testar binding de porta
+   netstat -tulpn | grep portainer
+   ss -tulpn | grep :9000
+   ```
+
+3. **Problemas de Acesso do Navegador:**
+   - Tente `http://localhost:9000` em vez de `127.0.0.1:9000`
+   - Limpe cache e cookies do navegador
+   - Tente navegador diferente ou modo incógnito
+   - Verifique console do navegador para erros JavaScript
+
+### **Problemas de Build Docker**
+
+#### Problema: Builds Docker falham com erros de permissão
+**Soluções:**
+1. **Verificar Configurações do BuildKit:**
+   ```bash
+   # Verificar se BuildKit está habilitado
+   echo $DOCKER_BUILDKIT
+   docker buildx version
+   ```
+
+2. **Corrigir Permissões de Arquivo:**
+   ```bash
+   # No diretório do Dockerfile
+   chmod +r Dockerfile
+   sudo chown -R $USER:$USER .
+   ```
+
+3. **Usar Buildx para Builds Complexos:**
+   ```bash
+   docker buildx build --platform linux/amd64 -t meuapp .
+   ```
+
+#### Problema: Falta de espaço em disco durante builds
+**Soluções:**
+1. **Limpar Sistema Docker:**
+   ```bash
+   # Remover dados não utilizados (automático com auto-prune habilitado)
+   docker system prune -af
+   
+   # Verificar uso de disco
+   docker system df
+   ```
+
+2. **Verificar Configuração Auto-Prune:**
+   ```bash
+   # Verificar se auto-prune está funcionando
+   systemctl list-timers | grep docker-prune
+   journalctl -u docker-prune --since="1 week ago"
+   ```
+
+### **Problemas de Rede Docker**
+
+#### Problema: Containers não conseguem acessar internet
+**Soluções:**
+1. **Verificar Rede Docker:**
+   ```bash
+   docker network ls
+   docker network inspect bridge
+   ```
+
+2. **Verificar Rede do Sistema:**
+   ```bash
+   # Verificar resolução DNS
+   docker run --rm busybox nslookup google.com
+   
+   # Verificar roteamento
+   ip route show
+   ```
+
+3. **Reiniciar Serviços de Rede:**
+   ```bash
+   sudo systemctl restart NetworkManager
+   sudo systemctl restart docker
+   ```
+
+#### Problema: Conflitos de porta entre containers
+**Soluções:**
+1. **Verificar Uso de Porta:**
+   ```bash
+   netstat -tulpn | grep :NUMERO_PORTA
+   docker ps --format "table {{.Names}}\t{{.Ports}}"
+   ```
+
+2. **Usar Portas Diferentes:**
+   ```bash
+   # Mapear para porta diferente do host
+   docker run -p 8080:80 nginx  # Em vez de 80:80
+   ```
+
+3. **Usar Redes Docker:**
+   ```bash
+   # Criar rede personalizada
+   docker network create minharede
+   docker run --network minharede meuapp
+   ```
+
+### **Problemas com Docker Compose**
+
+#### Problema: Serviços Docker Compose falham ao iniciar
+**Soluções:**
+1. **Verificar Sintaxe do Compose:**
+   ```bash
+   docker-compose config
+   docker-compose validate
+   ```
+
+2. **Verificar Dependências de Serviços:**
+   ```bash
+   # Iniciar serviços individualmente
+   docker-compose up nome-servico
+   
+   # Verificar logs
+   docker-compose logs nome-servico
+   ```
+
+3. **Atualizar Arquivo Compose:**
+   ```bash
+   # Usar versão compatível
+   version: '3.8'  # Em vez de versões mais novas
+   ```
+
+### **Problemas de Armazenamento Docker**
+
+#### Problema: Falhas de montagem de volume
+**Soluções:**
+1. **Verificar Permissões de Volume:**
+   ```bash
+   # Criar volume com permissões corretas
+   docker volume create --driver local meuvolume
+   
+   # Verificar volumes existentes
+   docker volume ls
+   docker volume inspect meuvolume
+   ```
+
+2. **Corrigir Permissões de Montagem Host:**
+   ```bash
+   # Para montagens de volume host
+   sudo chmod 755 /caminho/host
+   sudo chown -R 1000:1000 /caminho/host  # Combinar com usuário do container
+   ```
+
+#### Problema: Dados do container não persistem
+**Soluções:**
+1. **Verificar Configuração de Volume:**
+   ```bash
+   # Verificar se volume está montado corretamente
+   docker inspect nome-container | grep -A 10 "Mounts"
+   ```
+
+2. **Usar Volumes Nomeados:**
+   ```bash
+   # Em vez de volumes anônimos
+   docker run -v meusdados:/app/data meuapp
+   ```
 
 ## 🚨 Procedimentos de Recuperação
 

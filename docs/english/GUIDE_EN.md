@@ -247,7 +247,6 @@ nixos/
 ├── modules/
 │   ├── home/                      👤 USER
 │   │   ├── custom-scripts.nix     🔧 Scripts (rebuild/clean/update)
-│   │   ├── gaming-on-demand.nix   🎮 Gaming optimizations
 │   │   ├── git.nix                📝 Git configuration
 │   │   ├── gtk.nix                🎨 GTK themes
 │   │   ├── hypr-workspace-manager.nix 🖥️ Monitor-based service management
@@ -264,12 +263,14 @@ nixos/
 │   │       ├── core.nix           🔧 Fundamental tools
 │   │       ├── desktop.nix        🖥️ Desktop environment
 │   │       ├── gaming.nix         🎮 Gaming components
-│   │       └── media.nix          🎵 Media components
+│   │       ├── media.nix          🎵 Media components
+│   │       └── docker.nix         🐳 Docker containerization
 │   └── system/                    ⚙️ SYSTEM
 │       ├── auto-update.nix        ⚙️ Automatic system updates
 │       ├── bluetooth.nix          🟦 Bluetooth configuration
 │       ├── boot.nix               🚀 Boot (XanMod, optimized)
 │       ├── conditional-services.nix 🔄 Conditional services
+│       ├── docker.nix             🐳 Docker containerization
 │       ├── filesystems.nix        💾 Disks and mounting
 │       ├── fonts.nix              🔤 System fonts
 │       ├── gpu.nix                🎨 GPU (AMD/NVIDIA)
@@ -342,6 +343,13 @@ nixos/
       
       virtualbox = {
         enable = true;       # VM support
+      };
+      
+      docker = {
+        enable = true;       # Docker containerization
+        portainer = {
+          enable = true;     # Docker web management UI
+        };
       };
       
       polkit_gnome = {
@@ -422,6 +430,10 @@ nixos/
 # modules/packages/system/media.nix [conditional]
 - pipewire, wireplumber       # System audio
 - ffmpeg, gstreamer          # Codecs
+
+# modules/system/docker.nix [conditional]
+- docker, docker-compose      # Containerization
+- docker-buildx               # Multi-platform builds
 ```
 
 #### **Home Packages** (`home.packages`)
@@ -475,12 +487,13 @@ nixos/
     services = {
       virtualbox.enable = true;
       fauxmo.enable = true;
+      docker.enable = true;
       polkit_gnome.enable = true;
     };
   };
 }
 ```
-**Result**: Desktop system with AMD GPU, VirtualBox, Alexa integration, gaming packages.
+**Result**: Desktop system with AMD GPU, VirtualBox, Docker, Alexa integration, gaming packages.
 
 ### **Scenario 2: NVIDIA Work Laptop**
 ```nix
@@ -500,12 +513,13 @@ nixos/
     services = {
       virtualbox.enable = false;  # Save resources
       fauxmo.enable = false;      # No IoT
+      docker.enable = true;       # Development containers
       polkit_gnome.enable = true;
     };
   };
 }
 ```
-**Result**: Laptop with NVIDIA, Bluetooth, no gaming, work-optimized.
+**Result**: Laptop with NVIDIA, Bluetooth, Docker for development, no gaming, work-optimized.
 
 ### **Scenario 3: Headless Server**
 ```nix
@@ -519,6 +533,7 @@ nixos/
     services = {
       virtualbox.enable = true;   # For VMs
       fauxmo.enable = false;
+      docker.enable = true;       # Container services
       polkit_gnome.enable = false; # No GUI
     };
   };
@@ -531,7 +546,7 @@ nixos/
   };
 }
 ```
-**Result**: Server with SSH, VMs, no GUI, automatic cleanup.
+**Result**: Server with SSH, VMs, Docker containers, no GUI, automatic cleanup.
 
 ## ⚡ Essential Commands
 
@@ -556,30 +571,29 @@ nixos-rebuild switch --flake /etc/nixos#default --upgrade
 nix-collect-garbage -d && nix-store --optimise
 ```
 
-### **Gaming Mode**
-```bash
-# Enable gaming optimizations
-gaming-mode-on
-
-# Disable gaming optimizations
-gaming-mode-off
-
-# Current status
-gaming-mode-status
-```
 
 ### **Service Management**
 ```bash
 # Check specific services
 systemctl status fauxmo
+systemctl status docker
+systemctl status portainer
 systemctl --user status polkit-gnome-authentication-agent-1
 
 # Fauxmo control (monitor-based automation)
 sudo systemctl start fauxmo    # Manual start
 sudo systemctl stop fauxmo     # Manual stop
 
+# Docker management
+sudo systemctl start docker    # Start Docker service
+sudo systemctl stop docker     # Stop Docker service
+docker ps                      # List running containers
+docker system prune -af        # Clean unused Docker data
+
 # Service logs
 journalctl -u fauxmo -f
+journalctl -u docker -f
+journalctl -u portainer -f
 journalctl --user -u polkit-gnome-authentication-agent-1 -f
 
 # Monitor system status
@@ -683,13 +697,6 @@ build = {
 };
 ```
 
-### **Gaming Optimized**
-```bash
-# gaming-on-demand.nix applies:
-echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-echo 1 | sudo tee /proc/sys/vm/oom_kill_allocating_task
-echo 0 | sudo tee /proc/sys/kernel/split_lock_mitigate
-```
 
 ### **Intelligent Garbage Collection**
 ```nix

@@ -70,7 +70,8 @@ nixos/
 ├── ⚙️ configuration.nix           # Main system configuration
 ├── 🏠 home.nix                    # Main Home Manager configuration
 ├── 🚀 install.sh                  # Intelligent interactive installer
-└── 📋 preset.conf                 # Saved configuration preset (auto-generated)
+├── 📋 preset.conf                 # Saved configuration preset (auto-generated)
+└── 🔧 post-install.sh             # User-customizable post-installation script (optional)
 ```
 
 ## 🎯 How Layers Interact
@@ -332,6 +333,7 @@ The installer provides a comprehensive interactive setup experience:
 3. **Disk Configuration**: Detect and configure additional storage devices
 4. **Configuration Preview**: Review complete setup before installation
 5. **Safe Deployment**: Backup existing config (optional) and deploy new configuration
+6. **Post-Installation Automation**: Optional execution of user-defined post-installation scripts
 
 #### **📁 Preset System Example**
 
@@ -456,5 +458,95 @@ Do you want to use this saved configuration? (Y/n):
 - **Instant Reuse**: Skip entire configuration process with saved presets
 - **Portable Presets**: Saved in script directory (`preset.conf`)
 - **Detailed Display**: Shows creation date and complete disk configurations
+
+## 🔧 Post-Installation Scripts
+
+The configuration includes a flexible post-installation script system that allows users to automate custom tasks after successful system rebuilds.
+
+### **📋 How It Works**
+
+After the system rebuild completes successfully, the installer automatically:
+
+1. **🔍 Detects Script**: Checks for `post-install.sh` in the project root
+2. **👤 User Permission**: Asks the user whether to execute the script
+3. **⚡ Safe Execution**: Runs the script with proper error handling
+4. **🧹 Cleanup Prompt**: Always prompts for system cleanup regardless of script execution
+
+### **💡 Creating Your Post-Installation Script**
+
+Create a `post-install.sh` file in the project root with your custom automation:
+
+```bash
+#!/bin/bash
+# Example post-install.sh - Configure wallpapers
+
+# Color definitions for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${GREEN}🖼️  Configurando wallpapers personalizados...${NC}"
+
+# Apply wallpapers if swww daemon is running
+if pgrep -x "swww-daemon" > /dev/null; then
+    echo -e "${BLUE}   Aplicando wallpapers...${NC}"
+    
+    # Apply wallpaper for each connected monitor
+    if hyprctl monitors | grep -q "DP-3"; then
+        swww img ~/.dotfiles/.wallpapers/Kiki.jpg --outputs DP-3 --transition-type wipe --transition-duration 1
+    fi
+    
+    if hyprctl monitors | grep -q "DP-4"; then
+        swww img ~/.dotfiles/.wallpapers/Glass_Makima.jpg --outputs DP-4 --transition-type wipe --transition-duration 1
+    fi
+    
+    if hyprctl monitors | grep -q "eDP-1"; then
+        swww img ~/.dotfiles/.wallpapers/a_girl_with_short_brown_hair_and_white_shirt.jpg --outputs eDP-1 --transition-type wipe --transition-duration 1
+    fi
+    
+    echo -e "${GREEN}✅ Wallpapers aplicados com sucesso!${NC}"
+else
+    echo -e "${YELLOW}⚠️  SWWW daemon não está rodando. Ignorando configuração de wallpapers.${NC}"
+fi
+
+echo -e "${GREEN}🎉 Configuração pós-instalação concluída!${NC}"
+```
+
+### **🎯 Common Use Cases**
+
+- **🖼️ Wallpaper Configuration**: Set monitor-specific wallpapers using swww
+- **⚙️ Service Restart**: Restart specific user services (AGS, eww, etc.)
+- **🔗 Symbolic Links**: Create custom symbolic links to dotfiles
+- **📁 Directory Setup**: Create user directories and set permissions
+- **🔧 Theme Application**: Apply custom themes or configurations
+- **📦 Additional Package Installation**: Install user-specific packages
+
+### **🛡️ Script Execution Flow**
+
+```bash
+🔄 System rebuild completed successfully
+    ↓
+🔍 Check for post-install.sh existence
+    ↓
+📋 [IF FOUND] Display script detection message
+    ↓
+👤 Ask user: "Execute post-installation script? (Y/n)"
+    ↓
+⚡ [IF YES] Execute script with error handling
+    ↓ 
+✅ Display execution results
+    ↓
+🧹 ALWAYS ask about system cleanup (garbage collection)
+```
+
+### **⚠️ Important Notes**
+
+- **🔒 Security**: Scripts run with user permissions, review contents before execution
+- **📝 Executable**: The installer automatically makes scripts executable (`chmod +x`)
+- **🔄 Non-blocking**: Script failures don't prevent cleanup prompts
+- **🗂️ Optional**: System works normally without post-installation scripts
+- **🎨 Formatting**: Use color codes for better user experience consistency
 
 This architecture was designed to be **maintainable**, **scalable**, and **performant**, following NixOS community best practices while adding specific innovations for an optimized desktop setup.

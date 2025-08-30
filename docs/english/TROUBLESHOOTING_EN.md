@@ -12,9 +12,10 @@ This guide helps you resolve common issues encountered during installation and c
 6. [Network and Download Issues](#-network-and-download-issues)
 7. [Permission and Access Issues](#-permission-and-access-issues)
 8. [Service Management Issues](#-service-management-issues)
-9. [Docker and Containerization Issues](#-docker-and-containerization-issues)
-10. [Rollback and Recovery Procedures](#-rollback-and-recovery-procedures)
-11. [Advanced Debugging](#-advanced-debugging)
+9. [Post-Installation Script Issues](#-post-installation-script-issues)
+10. [Docker and Containerization Issues](#-docker-and-containerization-issues)
+11. [Rollback and Recovery Procedures](#-rollback-and-recovery-procedures)
+12. [Advanced Debugging](#-advanced-debugging)
 
 ## 🚀 Installation Issues
 
@@ -544,6 +545,326 @@ sudo chmod 755 /etc/nixos
    ```bash
    /run/current-system/sw/libexec/polkit-gnome-authentication-agent-1 &
    ```
+
+## 🔧 Post-Installation Script Issues
+
+### **Script Execution Problems**
+
+#### Problem: Post-installation script not detected
+**Symptoms:** Installer skips directly to cleanup prompt, no script detection message
+
+**Solutions:**
+1. **Check Script Location:**
+   ```bash
+   ls -la post-install.sh
+   # Should be in the same directory as install.sh
+   ```
+
+2. **Verify File Name:**
+   ```bash
+   # Must be exactly "post-install.sh" (case-sensitive)
+   mv post_install.sh post-install.sh  # If using underscores
+   mv Post-Install.sh post-install.sh  # If using capital letters
+   ```
+
+3. **Check Working Directory:**
+   ```bash
+   pwd  # Should be in the installer directory
+   ./install.sh  # Run from correct location
+   ```
+
+#### Problem: "Permission denied" when executing script
+**Symptoms:** Script is detected but fails to execute with permission errors
+
+**Solutions:**
+1. **Check Script Permissions:**
+   ```bash
+   ls -la post-install.sh
+   # Should show execute permissions (x) for user
+   ```
+
+2. **Fix Permissions:**
+   ```bash
+   chmod +x post-install.sh
+   # The installer should do this automatically, but manual fix works
+   ```
+
+3. **Check Script Ownership:**
+   ```bash
+   # Ensure you own the script
+   sudo chown $USER:$USER post-install.sh
+   ```
+
+#### Problem: Script executes but commands fail
+**Symptoms:** Script runs but individual commands inside fail
+
+**Solutions:**
+1. **Test Commands Manually:**
+   ```bash
+   # Test each command from your script individually
+   swww img ~/.dotfiles/.wallpapers/test.jpg --outputs DP-3
+   hyprctl monitors
+   ```
+
+2. **Check Dependencies:**
+   ```bash
+   # Verify required tools are available
+   which swww
+   which hyprctl
+   which pgrep
+   
+   # Check if services are running
+   pgrep -x "swww-daemon"
+   pgrep -x "Hyprland"
+   ```
+
+3. **Add Error Checking:**
+   ```bash
+   #!/bin/bash
+   # Add to your post-install.sh
+   
+   # Exit on error (optional, for debugging)
+   set -e
+   
+   # Check if command exists before using
+   if ! command -v swww >/dev/null 2>&1; then
+       echo -e "${YELLOW}⚠️ SWWW not found, skipping wallpaper setup${NC}"
+       exit 0
+   fi
+   ```
+
+### **Common Script Issues**
+
+#### Problem: Wallpaper commands not working
+**Symptoms:** SWWW commands in script fail or don't apply wallpapers
+
+**Solutions:**
+1. **Check SWWW Daemon:**
+   ```bash
+   # Verify daemon is running
+   pgrep -x "swww-daemon"
+   
+   # Start daemon if not running
+   swww init
+   ```
+
+2. **Test Wallpaper Command:**
+   ```bash
+   # Test wallpaper application manually
+   swww img /path/to/wallpaper.jpg --outputs DP-3
+   
+   # Check available monitors
+   hyprctl monitors
+   ```
+
+3. **Fix File Paths:**
+   ```bash
+   # Ensure wallpaper files exist
+   ls -la ~/.dotfiles/.wallpapers/
+   
+   # Use absolute paths in script
+   swww img /home/$USER/.dotfiles/.wallpapers/wallpaper.jpg
+   ```
+
+#### Problem: Monitor detection not working
+**Symptoms:** Script can't detect connected monitors
+
+**Solutions:**
+1. **Check Hyprland Status:**
+   ```bash
+   # Verify Hyprland is running
+   echo $XDG_SESSION_TYPE  # Should show "wayland"
+   hyprctl version
+   ```
+
+2. **Test Monitor Commands:**
+   ```bash
+   # List monitors
+   hyprctl monitors
+   
+   # Check specific monitor
+   hyprctl monitors | grep -q "DP-3" && echo "DP-3 connected"
+   ```
+
+3. **Fix Monitor Names:**
+   ```bash
+   # Get actual monitor names
+   hyprctl monitors -j | jq -r '.[] | .name'
+   
+   # Update script with correct names
+   if hyprctl monitors | grep -q "HDMI-1"; then  # Instead of DP-3
+   ```
+
+#### Problem: Script output formatting issues
+**Symptoms:** Color codes or formatting not displaying correctly
+
+**Solutions:**
+1. **Check Terminal Support:**
+   ```bash
+   # Test color support
+   echo -e "\033[32mTest Green Text\033[0m"
+   
+   # Check TERM variable
+   echo $TERM
+   ```
+
+2. **Fix Color Definitions:**
+   ```bash
+   # Ensure color variables are defined correctly
+   RED='\033[0;31m'
+   GREEN='\033[0;32m'
+   BLUE='\033[0;34m'
+   YELLOW='\033[1;33m'
+   NC='\033[0m' # No Color (important for reset)
+   ```
+
+3. **Use Printf Instead of Echo:**
+   ```bash
+   # More reliable than echo -e
+   printf "${GREEN}✅ Success message${NC}\n"
+   ```
+
+### **Script Debugging**
+
+#### Problem: Need to debug script execution
+**Solutions:**
+1. **Enable Debug Mode:**
+   ```bash
+   # Add to top of post-install.sh for detailed output
+   #!/bin/bash
+   set -x  # Show each command as it's executed
+   set -e  # Exit on first error (optional)
+   ```
+
+2. **Add Logging:**
+   ```bash
+   # Add logging to your script
+   LOG_FILE="/tmp/post-install.log"
+   echo "$(date): Starting post-installation script" >> $LOG_FILE
+   
+   # Log commands
+   swww img wallpaper.jpg 2>&1 | tee -a $LOG_FILE
+   ```
+
+3. **Test Script Independently:**
+   ```bash
+   # Test script outside of installer
+   bash -n post-install.sh  # Check syntax
+   bash -x post-install.sh  # Run with debug output
+   ```
+
+#### Problem: Script works manually but fails during installer
+**Symptoms:** Script executes fine when run directly but fails during installation
+
+**Solutions:**
+1. **Check Environment Differences:**
+   ```bash
+   # Compare environment variables
+   env | sort > manual_env.txt  # When run manually
+   # Then check during installer execution
+   ```
+
+2. **Check Working Directory:**
+   ```bash
+   # Add to script to check current directory
+   echo "Current directory: $(pwd)"
+   echo "Script location: $(dirname "$0")"
+   ```
+
+3. **Use Absolute Paths:**
+   ```bash
+   # Use full paths instead of relative
+   HOME_DIR="/home/$USER"
+   swww img "$HOME_DIR/.dotfiles/.wallpapers/wallpaper.jpg"
+   ```
+
+### **Script Best Practices for Troubleshooting**
+
+#### Create a Robust Post-Install Script:
+```bash
+#!/bin/bash
+# Robust post-install.sh template
+
+# Color definitions
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Error handling function
+handle_error() {
+    echo -e "${RED}❌ Error: $1${NC}" >&2
+    exit 1
+}
+
+# Dependency check function
+check_dependency() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        echo -e "${YELLOW}⚠️ $1 not found, skipping related tasks${NC}"
+        return 1
+    fi
+    return 0
+}
+
+# Main script
+echo -e "${GREEN}🔧 Starting post-installation configuration...${NC}"
+
+# Check if we're in the right environment
+if [ -z "$XDG_SESSION_TYPE" ] || [ "$XDG_SESSION_TYPE" != "wayland" ]; then
+    echo -e "${YELLOW}⚠️ Not in Wayland session, some features may not work${NC}"
+fi
+
+# Wallpaper configuration (with error handling)
+if check_dependency "swww" && check_dependency "hyprctl"; then
+    if pgrep -x "swww-daemon" >/dev/null; then
+        echo -e "${BLUE}   Configuring wallpapers...${NC}"
+        
+        # Define wallpaper directory
+        WALLPAPER_DIR="$HOME/.dotfiles/.wallpapers"
+        
+        # Check if wallpaper directory exists
+        if [ ! -d "$WALLPAPER_DIR" ]; then
+            echo -e "${YELLOW}⚠️ Wallpaper directory not found: $WALLPAPER_DIR${NC}"
+        else
+            # Apply wallpapers for connected monitors
+            if hyprctl monitors | grep -q "DP-3" && [ -f "$WALLPAPER_DIR/Kiki.jpg" ]; then
+                swww img "$WALLPAPER_DIR/Kiki.jpg" --outputs DP-3 --transition-type wipe --transition-duration 1 || \
+                    echo -e "${YELLOW}⚠️ Failed to set wallpaper for DP-3${NC}"
+            fi
+            
+            if hyprctl monitors | grep -q "DP-4" && [ -f "$WALLPAPER_DIR/Glass_Makima.jpg" ]; then
+                swww img "$WALLPAPER_DIR/Glass_Makima.jpg" --outputs DP-4 --transition-type wipe --transition-duration 1 || \
+                    echo -e "${YELLOW}⚠️ Failed to set wallpaper for DP-4${NC}"
+            fi
+            
+            echo -e "${GREEN}✅ Wallpaper configuration completed${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⚠️ SWWW daemon not running, skipping wallpaper configuration${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠️ Required tools not available, skipping wallpaper configuration${NC}"
+fi
+
+echo -e "${GREEN}🎉 Post-installation configuration finished!${NC}"
+```
+
+#### Quick Debugging Commands:
+```bash
+# Check script syntax without execution
+bash -n post-install.sh
+
+# Run script with verbose output
+bash -x post-install.sh
+
+# Check if script is executable
+ls -la post-install.sh
+
+# Test individual components
+hyprctl monitors | grep -q "DP-3" && echo "Monitor DP-3 found"
+pgrep -x "swww-daemon" && echo "SWWW daemon running"
+```
 
 ## 🐳 Docker and Containerization Issues
 

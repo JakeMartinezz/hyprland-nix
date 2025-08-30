@@ -11,9 +11,10 @@ Perguntas e respostas comuns sobre o Instalador de Configuração NixOS e config
 5. [Sistema de Feature Flags](#-sistema-de-feature-flags)
 6. [Integração de Dotfiles](#-integração-de-dotfiles)
 7. [Performance e Gaming](#-performance-e-gaming)
-8. [Solução de Problemas](#-solução-de-problemas)
-9. [Uso Avançado](#-uso-avançado)
-10. [Comparação com Outras Configurações](#-comparação-com-outras-configurações)
+8. [Scripts de Pós-Instalação](#-scripts-de-pós-instalação)
+9. [Solução de Problemas](#-solução-de-problemas)
+10. [Uso Avançado](#-uso-avançado)
+11. [Comparação com Outras Configurações](#-comparação-com-outras-configurações)
 
 ## 🌟 Perguntas Gerais
 
@@ -307,6 +308,95 @@ in {
 - **Portainer**: Interface web em `http://localhost:9000` (se habilitado)
 - **Docker Compose**: Para configurações multi-container complexas
 - **Gerenciamento de serviços**: Reinício automático de containers no boot
+
+## 🔧 Scripts de Pós-Instalação
+
+### **P: O que são scripts de pós-instalação?**
+**R:** Scripts de pós-instalação são scripts bash personalizáveis pelo usuário que executam após rebuilds bem-sucedidos do sistema. Eles permitem automatizar configurações pessoais como definições de wallpaper, reinicialização de serviços ou configuração de ambiente personalizado.
+
+### **P: Como criar um script de pós-instalação?**
+**R:** Crie um arquivo `post-install.sh` na raiz do seu projeto:
+```bash
+#!/bin/bash
+# Exemplo: Configurar wallpapers
+
+# Definições de cores (recomendado para consistência)
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m' 
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${GREEN}🖼️ Configurando wallpapers pessoais...${NC}"
+
+# Aplicar wallpapers se o daemon swww estiver executando
+if pgrep -x "swww-daemon" > /dev/null; then
+    echo -e "${BLUE}   Aplicando wallpapers...${NC}"
+    
+    # Aplicar wallpapers por monitor
+    if hyprctl monitors | grep -q "DP-3"; then
+        swww img ~/.dotfiles/.wallpapers/monitor1.jpg --outputs DP-3
+    fi
+    
+    echo -e "${GREEN}✅ Wallpapers aplicados com sucesso!${NC}"
+else
+    echo -e "${YELLOW}⚠️ Daemon SWWW não está executando. Pulando configuração de wallpaper.${NC}"
+fi
+```
+
+### **P: Quando os scripts de pós-instalação executam?**
+**R:** O fluxo de execução do script é:
+1. **Rebuild do sistema completa** com sucesso
+2. **Detecção de script** - O instalador verifica a existência do `post-install.sh`
+3. **Permissão do usuário** - Pergunta se deseja executar o script
+4. **Execução segura** - Executa com tratamento de erros se aprovado
+5. **Prompt de limpeza** - Sempre pergunta sobre limpeza do sistema independentemente
+
+### **P: O que posso automatizar com scripts de pós-instalação?**
+**R:** Casos de uso comuns:
+- **🖼️ Configuração de wallpapers** - Definir wallpapers específicos por monitor
+- **🔗 Links simbólicos** - Criar links para dotfiles ou diretórios personalizados  
+- **📁 Configuração de diretórios** - Criar diretórios de usuário com permissões adequadas
+- **🔧 Aplicação de temas** - Aplicar temas personalizados ou esquemas de cores
+- **⚙️ Gerenciamento de serviços** - Reiniciar serviços específicos do usuário (se necessário)
+- **📦 Configuração adicional** - Quaisquer comandos bash para ambiente pessoal
+
+### **P: Os scripts de pós-instalação são seguros?**
+**R:** Sim, com precauções adequadas:
+- **Apenas permissões de usuário** - Scripts executam com sua conta de usuário, não root
+- **Tratamento de erros** - O instalador lida com falhas de script graciosamente  
+- **Não-bloqueante** - Erros de script não impedem limpeza do sistema
+- **Execução opcional** - Você sempre é perguntado antes da execução
+- **Revisão recomendada** - Sempre revise conteúdo do script antes da execução
+
+### **P: O que acontece se meu script de pós-instalação falhar?**
+**R:** O sistema lida com falhas graciosamente:
+- **Relatório de erros** - Mostra mensagens de erro claras
+- **Continua normalmente** - Prompt de limpeza do sistema ainda aparece
+- **Sem danos ao sistema** - Falhas de nível de usuário não afetam o sistema
+- **Depuração** - Verifique sintaxe do script e dependências
+
+### **P: Posso desabilitar o prompt do script de pós-instalação?**
+**R:** O prompt só aparece se `post-install.sh` existir. Para desabilitar:
+- **Remover o arquivo** - Deletar ou renomear `post-install.sh`
+- **Mover para outro lugar** - Manter script em localização diferente
+- **Responder 'Não'** - Simplesmente recusar quando perguntado (sem mudança permanente)
+
+### **P: Como testo meu script de pós-instalação?**
+**R:** Recomendações de teste:
+```bash
+# Tornar script executável
+chmod +x post-install.sh
+
+# Testar sintaxe
+bash -n post-install.sh
+
+# Execução de teste em ambiente de teste
+bash post-install.sh
+
+# Testar com diferentes condições (ex: daemon não executando)
+# Verificar tratamento de erros e formatação de saída
+```
 
 ## 🔧 Solução de Problemas
 

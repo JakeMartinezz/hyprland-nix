@@ -14,8 +14,9 @@
 4. [Feature Flags System](#-feature-flags-system)
 5. [Installed Packages](#-installed-packages)
 6. [Configuration Examples](#-configuration-examples)
-7. [Essential Commands](#-essential-commands)
-8. [Advanced Customization](#-advanced-customization)
+7. [Post-Installation Scripts](#-post-installation-scripts)
+8. [Essential Commands](#-essential-commands)
+9. [Advanced Customization](#-advanced-customization)
 
 ## 🚀 Installation
 
@@ -166,6 +167,12 @@ Use this configuration? (Y/n):
    - Selective file copying to `/etc/nixos`
    - Configuration file generation with user settings
    - Post-installation rebuild option
+
+6. **🔧 Post-Installation Automation**
+   - Optional execution of user-defined scripts
+   - Automatic detection of `post-install.sh` in project root
+   - User permission required for script execution
+   - Safe error handling and cleanup integration
 
 ### **🔧 Advanced Installation Options**
 
@@ -547,6 +554,197 @@ nixos/
 }
 ```
 **Result**: Server with SSH, VMs, Docker containers, no GUI, automatic cleanup.
+
+## 🔧 Post-Installation Scripts
+
+The configuration includes a flexible post-installation script system that allows users to automate custom tasks after successful system rebuilds.
+
+### **📋 What Are Post-Installation Scripts?**
+
+Post-installation scripts are user-customizable bash scripts that automatically run after the system rebuild completes successfully. They allow you to:
+
+- **🖼️ Configure wallpapers** - Set monitor-specific wallpapers using swww
+- **🔗 Create symbolic links** - Link dotfiles or custom configurations  
+- **📁 Setup directories** - Create user directories with proper permissions
+- **🔧 Apply themes** - Configure custom themes or color schemes
+- **⚙️ Restart services** - Restart specific user services if needed
+- **📦 Additional setup** - Any bash commands for personalizing your environment
+
+### **💡 Creating Your Post-Installation Script**
+
+Create a `post-install.sh` file in your project root (`/home/user/nixos/post-install.sh`):
+
+```bash
+#!/bin/bash
+# Example post-install.sh - Configure wallpapers
+
+# Color definitions for consistent output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${GREEN}🖼️ Configuring personal wallpapers...${NC}"
+
+# Apply wallpapers if swww daemon is running
+if pgrep -x "swww-daemon" > /dev/null; then
+    echo -e "${BLUE}   Applying wallpapers...${NC}"
+    
+    # Apply wallpaper for each connected monitor
+    if hyprctl monitors | grep -q "DP-3"; then
+        swww img ~/.dotfiles/.wallpapers/Kiki.jpg \
+            --outputs DP-3 \
+            --transition-type wipe \
+            --transition-duration 1
+    fi
+    
+    if hyprctl monitors | grep -q "DP-4"; then
+        swww img ~/.dotfiles/.wallpapers/Glass_Makima.jpg \
+            --outputs DP-4 \
+            --transition-type wipe \
+            --transition-duration 1
+    fi
+    
+    if hyprctl monitors | grep -q "eDP-1"; then
+        swww img ~/.dotfiles/.wallpapers/laptop_wallpaper.jpg \
+            --outputs eDP-1 \
+            --transition-type wipe \
+            --transition-duration 1
+    fi
+    
+    echo -e "${GREEN}✅ Wallpapers applied successfully!${NC}"
+else
+    echo -e "${YELLOW}⚠️ SWWW daemon not running. Skipping wallpaper configuration.${NC}"
+fi
+
+echo -e "${GREEN}🎉 Post-installation configuration completed!${NC}"
+```
+
+### **🔄 Script Execution Flow**
+
+```mermaid
+graph TD
+    A[System Rebuild Completes] --> B{post-install.sh exists?}
+    B -->|Yes| C[Display Script Detection Message]
+    B -->|No| F[Ask About System Cleanup]
+    C --> D[Ask User Permission]
+    D -->|Yes| E[Execute Script Safely]
+    D -->|No| G[Skip Script Execution]
+    E --> H[Display Results]
+    G --> H
+    H --> F[Ask About System Cleanup]
+    F --> I[End Process]
+```
+
+### **🛡️ Safety Features**
+
+- **User Permissions Only**: Scripts run with your user account, not root
+- **Error Handling**: The installer handles script failures gracefully
+- **Non-blocking**: Script errors don't prevent system cleanup
+- **Optional Execution**: You're always asked before running
+- **Auto-executable**: The installer automatically makes scripts executable
+
+### **🎯 Common Use Cases**
+
+#### **1. Multi-Monitor Wallpaper Setup**
+```bash
+# Detect and configure wallpapers per monitor
+for monitor in $(hyprctl monitors -j | jq -r '.[] | .name'); do
+    case "$monitor" in
+        "DP-3") swww img ~/.wallpapers/primary.jpg --outputs $monitor ;;
+        "DP-4") swww img ~/.wallpapers/secondary.jpg --outputs $monitor ;;
+        "eDP-1") swww img ~/.wallpapers/laptop.jpg --outputs $monitor ;;
+    esac
+done
+```
+
+#### **2. Dotfiles Synchronization**
+```bash
+# Update and apply dotfiles
+cd ~/.dotfiles
+git pull origin main
+stow zsh git nvim
+```
+
+#### **3. Custom Directory Setup**
+```bash
+# Create user directories with proper permissions
+mkdir -p ~/Projects/{personal,work,opensource}
+mkdir -p ~/Screenshots ~/Downloads/Software
+chmod 755 ~/Projects/*
+```
+
+#### **4. Development Environment Setup**
+```bash
+# Initialize development tools
+if command -v npm >/dev/null 2>&1; then
+    npm install -g yarn pnpm typescript
+fi
+
+# Setup Git repositories
+cd ~/Projects
+git clone https://github.com/user/dotfiles.git
+```
+
+### **⚠️ Best Practices**
+
+1. **Error Handling**: Always check if commands/daemons are available
+   ```bash
+   if command -v swww >/dev/null 2>&1; then
+       # swww commands here
+   else
+       echo "SWWW not available, skipping wallpaper setup"
+   fi
+   ```
+
+2. **Conditional Execution**: Check prerequisites before execution
+   ```bash
+   if pgrep -x "hyprland" > /dev/null; then
+       # Hyprland-specific commands
+   fi
+   ```
+
+3. **User Feedback**: Provide clear status messages with colors
+   ```bash
+   echo -e "${GREEN}✅ Task completed successfully${NC}"
+   echo -e "${YELLOW}⚠️ Warning: Optional task skipped${NC}"
+   echo -e "${RED}❌ Error: Task failed${NC}"
+   ```
+
+4. **Test Before Deploy**: Always test scripts in a safe environment
+   ```bash
+   # Test script syntax
+   bash -n post-install.sh
+   
+   # Test execution in isolated environment
+   bash post-install.sh
+   ```
+
+### **🔧 Script Management**
+
+#### **Enable/Disable Scripts**
+- **Enable**: Create `post-install.sh` in project root
+- **Disable**: Remove, rename, or move the file elsewhere
+- **Temporary disable**: Answer "No" when prompted (per-execution)
+
+#### **Testing Scripts**
+```bash
+# Make executable
+chmod +x post-install.sh
+
+# Test syntax only
+bash -n post-install.sh
+
+# Run in current environment
+bash post-install.sh
+```
+
+#### **Debugging Issues**
+- Check script permissions with `ls -la post-install.sh`
+- Verify script syntax with `bash -n post-install.sh`
+- Test individual commands in your shell
+- Review script output for error messages
 
 ## ⚡ Essential Commands
 

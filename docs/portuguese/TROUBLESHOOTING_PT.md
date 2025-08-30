@@ -12,9 +12,10 @@ Este guia ajuda você a resolver problemas comuns encontrados durante a instala�
 6. [Problemas de Rede e Download](#-problemas-de-rede-e-download)
 7. [Problemas de Permissão e Acesso](#-problemas-de-permissão-e-acesso)
 8. [Problemas de Gerenciamento de Serviços](#-problemas-de-gerenciamento-de-serviços)
-9. [Problemas de Docker e Containerização](#-problemas-de-docker-e-containerização)
-10. [Procedimentos de Rollback e Recuperação](#-procedimentos-de-rollback-e-recuperação)
-11. [Debug Avançado](#-debug-avançado)
+9. [Problemas de Scripts de Pós-Instalação](#-problemas-de-scripts-de-pós-instalação)
+10. [Problemas de Docker e Containerização](#-problemas-de-docker-e-containerização)
+11. [Procedimentos de Rollback e Recuperação](#-procedimentos-de-rollback-e-recuperação)
+12. [Debug Avançado](#-debug-avançado)
 
 ## 🚀 Problemas de Instalação
 
@@ -478,6 +479,326 @@ ls -la /etc/nixos/
 # Corrigir ownership
 sudo chown -R root:root /etc/nixos
 sudo chmod 755 /etc/nixos
+```
+
+## 🔧 Problemas de Scripts de Pós-Instalação
+
+### **Problemas de Execução de Script**
+
+#### Problema: Script de pós-instalação não detectado
+**Sintomas:** Instalador pula diretamente para prompt de limpeza, sem mensagem de detecção de script
+
+**Soluções:**
+1. **Verificar Localização do Script:**
+   ```bash
+   ls -la post-install.sh
+   # Deve estar no mesmo diretório que install.sh
+   ```
+
+2. **Verificar Nome do Arquivo:**
+   ```bash
+   # Deve ser exatamente "post-install.sh" (sensível a maiúsculas/minúsculas)
+   mv post_install.sh post-install.sh  # Se usando underscores
+   mv Post-Install.sh post-install.sh  # Se usando maiúsculas
+   ```
+
+3. **Verificar Diretório de Trabalho:**
+   ```bash
+   pwd  # Deve estar no diretório do instalador
+   ./install.sh  # Executar da localização correta
+   ```
+
+#### Problema: "Permission denied" ao executar script
+**Sintomas:** Script é detectado mas falha ao executar com erros de permissão
+
+**Soluções:**
+1. **Verificar Permissões do Script:**
+   ```bash
+   ls -la post-install.sh
+   # Deve mostrar permissões de execução (x) para o usuário
+   ```
+
+2. **Corrigir Permissões:**
+   ```bash
+   chmod +x post-install.sh
+   # O instalador deveria fazer isso automaticamente, mas correção manual funciona
+   ```
+
+3. **Verificar Propriedade do Script:**
+   ```bash
+   # Garantir que você é proprietário do script
+   sudo chown $USER:$USER post-install.sh
+   ```
+
+#### Problema: Script executa mas comandos falham
+**Sintomas:** Script roda mas comandos individuais dentro dele falham
+
+**Soluções:**
+1. **Testar Comandos Manualmente:**
+   ```bash
+   # Testar cada comando do seu script individualmente
+   swww img ~/.dotfiles/.wallpapers/test.jpg --outputs DP-3
+   hyprctl monitors
+   ```
+
+2. **Verificar Dependências:**
+   ```bash
+   # Verificar se ferramentas necessárias estão disponíveis
+   which swww
+   which hyprctl
+   which pgrep
+   
+   # Verificar se serviços estão executando
+   pgrep -x "swww-daemon"
+   pgrep -x "Hyprland"
+   ```
+
+3. **Adicionar Verificação de Erros:**
+   ```bash
+   #!/bin/bash
+   # Adicionar ao seu post-install.sh
+   
+   # Sair em erro (opcional, para depuração)
+   set -e
+   
+   # Verificar se comando existe antes de usar
+   if ! command -v swww >/dev/null 2>&1; then
+       echo -e "${YELLOW}⚠️ SWWW não encontrado, pulando configuração de wallpaper${NC}"
+       exit 0
+   fi
+   ```
+
+### **Problemas Comuns de Script**
+
+#### Problema: Comandos de wallpaper não funcionam
+**Sintomas:** Comandos SWWW no script falham ou não aplicam wallpapers
+
+**Soluções:**
+1. **Verificar Daemon SWWW:**
+   ```bash
+   # Verificar se daemon está executando
+   pgrep -x "swww-daemon"
+   
+   # Iniciar daemon se não estiver executando
+   swww init
+   ```
+
+2. **Testar Comando de Wallpaper:**
+   ```bash
+   # Testar aplicação de wallpaper manualmente
+   swww img /caminho/para/wallpaper.jpg --outputs DP-3
+   
+   # Verificar monitores disponíveis
+   hyprctl monitors
+   ```
+
+3. **Corrigir Caminhos de Arquivo:**
+   ```bash
+   # Garantir que arquivos de wallpaper existem
+   ls -la ~/.dotfiles/.wallpapers/
+   
+   # Usar caminhos absolutos no script
+   swww img /home/$USER/.dotfiles/.wallpapers/wallpaper.jpg
+   ```
+
+#### Problema: Detecção de monitor não funciona
+**Sintomas:** Script não consegue detectar monitores conectados
+
+**Soluções:**
+1. **Verificar Status do Hyprland:**
+   ```bash
+   # Verificar se Hyprland está executando
+   echo $XDG_SESSION_TYPE  # Deve mostrar "wayland"
+   hyprctl version
+   ```
+
+2. **Testar Comandos de Monitor:**
+   ```bash
+   # Listar monitores
+   hyprctl monitors
+   
+   # Verificar monitor específico
+   hyprctl monitors | grep -q "DP-3" && echo "DP-3 conectado"
+   ```
+
+3. **Corrigir Nomes de Monitor:**
+   ```bash
+   # Obter nomes reais dos monitores
+   hyprctl monitors -j | jq -r '.[] | .name'
+   
+   # Atualizar script com nomes corretos
+   if hyprctl monitors | grep -q "HDMI-1"; then  # Em vez de DP-3
+   ```
+
+#### Problema: Problemas de formatação de saída do script
+**Sintomas:** Códigos de cor ou formatação não exibem corretamente
+
+**Soluções:**
+1. **Verificar Suporte do Terminal:**
+   ```bash
+   # Testar suporte de cor
+   echo -e "\033[32mTexto Verde de Teste\033[0m"
+   
+   # Verificar variável TERM
+   echo $TERM
+   ```
+
+2. **Corrigir Definições de Cor:**
+   ```bash
+   # Garantir que variáveis de cor estão definidas corretamente
+   RED='\033[0;31m'
+   GREEN='\033[0;32m'
+   BLUE='\033[0;34m'
+   YELLOW='\033[1;33m'
+   NC='\033[0m' # Sem Cor (importante para reset)
+   ```
+
+3. **Usar Printf em Vez de Echo:**
+   ```bash
+   # Mais confiável que echo -e
+   printf "${GREEN}✅ Mensagem de sucesso${NC}\n"
+   ```
+
+### **Depuração de Scripts**
+
+#### Problema: Preciso depurar execução de script
+**Soluções:**
+1. **Ativar Modo Debug:**
+   ```bash
+   # Adicionar ao topo do post-install.sh para saída detalhada
+   #!/bin/bash
+   set -x  # Mostrar cada comando conforme é executado
+   set -e  # Sair no primeiro erro (opcional)
+   ```
+
+2. **Adicionar Logging:**
+   ```bash
+   # Adicionar logging ao seu script
+   LOG_FILE="/tmp/post-install.log"
+   echo "$(date): Iniciando script pós-instalação" >> $LOG_FILE
+   
+   # Log de comandos
+   swww img wallpaper.jpg 2>&1 | tee -a $LOG_FILE
+   ```
+
+3. **Testar Script Independentemente:**
+   ```bash
+   # Testar script fora do instalador
+   bash -n post-install.sh  # Verificar sintaxe
+   bash -x post-install.sh  # Executar com saída de debug
+   ```
+
+#### Problema: Script funciona manualmente mas falha durante instalador
+**Sintomas:** Script executa bem quando executado diretamente mas falha durante instalação
+
+**Soluções:**
+1. **Verificar Diferenças de Ambiente:**
+   ```bash
+   # Comparar variáveis de ambiente
+   env | sort > manual_env.txt  # Quando executado manualmente
+   # Então verificar durante execução do instalador
+   ```
+
+2. **Verificar Diretório de Trabalho:**
+   ```bash
+   # Adicionar ao script para verificar diretório atual
+   echo "Diretório atual: $(pwd)"
+   echo "Localização do script: $(dirname "$0")"
+   ```
+
+3. **Usar Caminhos Absolutos:**
+   ```bash
+   # Usar caminhos completos em vez de relativos
+   HOME_DIR="/home/$USER"
+   swww img "$HOME_DIR/.dotfiles/.wallpapers/wallpaper.jpg"
+   ```
+
+### **Melhores Práticas para Solução de Problemas de Scripts**
+
+#### Criar um Script Post-Install Robusto:
+```bash
+#!/bin/bash
+# Template robusto de post-install.sh
+
+# Definições de cores
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Função de tratamento de erro
+handle_error() {
+    echo -e "${RED}❌ Erro: $1${NC}" >&2
+    exit 1
+}
+
+# Função de verificação de dependência
+check_dependency() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        echo -e "${YELLOW}⚠️ $1 não encontrado, pulando tarefas relacionadas${NC}"
+        return 1
+    fi
+    return 0
+}
+
+# Script principal
+echo -e "${GREEN}🔧 Iniciando configuração pós-instalação...${NC}"
+
+# Verificar se estamos no ambiente correto
+if [ -z "$XDG_SESSION_TYPE" ] || [ "$XDG_SESSION_TYPE" != "wayland" ]; then
+    echo -e "${YELLOW}⚠️ Não em sessão Wayland, alguns recursos podem não funcionar${NC}"
+fi
+
+# Configuração de wallpaper (com tratamento de erro)
+if check_dependency "swww" && check_dependency "hyprctl"; then
+    if pgrep -x "swww-daemon" >/dev/null; then
+        echo -e "${BLUE}   Configurando wallpapers...${NC}"
+        
+        # Definir diretório de wallpaper
+        WALLPAPER_DIR="$HOME/.dotfiles/.wallpapers"
+        
+        # Verificar se diretório de wallpaper existe
+        if [ ! -d "$WALLPAPER_DIR" ]; then
+            echo -e "${YELLOW}⚠️ Diretório de wallpaper não encontrado: $WALLPAPER_DIR${NC}"
+        else
+            # Aplicar wallpapers para monitores conectados
+            if hyprctl monitors | grep -q "DP-3" && [ -f "$WALLPAPER_DIR/Kiki.jpg" ]; then
+                swww img "$WALLPAPER_DIR/Kiki.jpg" --outputs DP-3 --transition-type wipe --transition-duration 1 || \
+                    echo -e "${YELLOW}⚠️ Falha ao definir wallpaper para DP-3${NC}"
+            fi
+            
+            if hyprctl monitors | grep -q "DP-4" && [ -f "$WALLPAPER_DIR/Glass_Makima.jpg" ]; then
+                swww img "$WALLPAPER_DIR/Glass_Makima.jpg" --outputs DP-4 --transition-type wipe --transition-duration 1 || \
+                    echo -e "${YELLOW}⚠️ Falha ao definir wallpaper para DP-4${NC}"
+            fi
+            
+            echo -e "${GREEN}✅ Configuração de wallpaper concluída${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⚠️ Daemon SWWW não está executando, pulando configuração de wallpaper${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠️ Ferramentas necessárias não disponíveis, pulando configuração de wallpaper${NC}"
+fi
+
+echo -e "${GREEN}🎉 Configuração pós-instalação finalizada!${NC}"
+```
+
+#### Comandos Rápidos de Depuração:
+```bash
+# Verificar sintaxe do script sem execução
+bash -n post-install.sh
+
+# Executar script com saída verbose
+bash -x post-install.sh
+
+# Verificar se script é executável
+ls -la post-install.sh
+
+# Testar componentes individuais
+hyprctl monitors | grep -q "DP-3" && echo "Monitor DP-3 encontrado"
+pgrep -x "swww-daemon" && echo "Daemon SWWW executando"
 ```
 
 ## 🐳 Problemas de Docker e Containerização

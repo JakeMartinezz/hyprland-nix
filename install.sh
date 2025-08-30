@@ -794,6 +794,40 @@ apply_prepared_dotfiles() {
     fi
 }
 
+# Function to run post-installation script if it exists
+run_post_install_script() {
+    local post_script_path="./post-install.sh"
+    
+    echo
+    if [[ -f "$post_script_path" ]]; then
+        echo -e "${CYAN}📋 Script pós-instalação detectado: ${post_script_path}${NC}"
+        echo -e "${YELLOW}Este script contém comandos personalizados do usuário.${NC}"
+        
+        if ask_yes_no "Executar script pós-instalação?" "y" | grep -q "true"; then
+            echo -e "${BLUE}🔧 Executando script pós-instalação...${NC}"
+            
+            # Make script executable if not already
+            chmod +x "$post_script_path"
+            
+            # Execute script and capture exit code
+            if bash "$post_script_path"; then
+                echo -e "${GREEN}✅ Script pós-instalação executado com sucesso!${NC}"
+            else
+                echo -e "${RED}❌ Erro durante execução do script pós-instalação${NC}"
+                echo -e "${YELLOW}⚠️  Continuando com o processo de instalação...${NC}"
+            fi
+        else
+            echo -e "${YELLOW}⏭️  Script pós-instalação ignorado pelo usuário${NC}"
+        fi
+        
+        # After post-install script (executed or skipped), always ask about cleaner
+        return 0
+    else
+        # No post-install script found
+        return 1
+    fi
+}
+
 # Function to run nixos-cleaner if user wants
 run_nixos_cleaner() {
     echo
@@ -1912,8 +1946,14 @@ if [[ "$do_rebuild" == "true" ]]; then
         # 🔥 NOVA SEÇÃO: Aplicar dotfiles preparados
         apply_prepared_dotfiles
         
-        # Offer to run nixos-cleaner after successful rebuild
-        run_nixos_cleaner
+        # 🔥 NOVA SEÇÃO: Executar script pós-instalação se existir
+        if run_post_install_script; then
+            # Post-install script exists (executed or skipped), always ask about cleaner
+            run_nixos_cleaner
+        else
+            # No post-install script found, ask about cleaner directly
+            run_nixos_cleaner
+        fi
         
     else
         echo -e "${RED}$MSG_REBUILD_FAILED${NC}"

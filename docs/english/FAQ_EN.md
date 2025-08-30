@@ -11,9 +11,10 @@ Common questions and answers about the NixOS Configuration Installer and setup.
 5. [Feature Flags System](#-feature-flags-system)
 6. [Dotfiles Integration](#-dotfiles-integration)
 7. [Performance and Gaming](#-performance-and-gaming)
-8. [Troubleshooting](#-troubleshooting)
-9. [Advanced Usage](#-advanced-usage)
-10. [Comparison with Other Setups](#-comparison-with-other-setups)
+8. [Post-Installation Scripts](#-post-installation-scripts)
+9. [Troubleshooting](#-troubleshooting)
+10. [Advanced Usage](#-advanced-usage)
+11. [Comparison with Other Setups](#-comparison-with-other-setups)
 
 ## 🌟 General Questions
 
@@ -307,6 +308,95 @@ in {
 - **Portainer**: Web UI at `http://localhost:9000` (if enabled)
 - **Docker Compose**: For complex multi-container setups
 - **Service management**: Automatic container restart on boot
+
+## 🔧 Post-Installation Scripts
+
+### **Q: What are post-installation scripts?**
+**A:** Post-installation scripts are user-customizable bash scripts that run after successful system rebuilds. They allow you to automate personal configurations like wallpaper settings, service restarts, or custom environment setup.
+
+### **Q: How do I create a post-installation script?**
+**A:** Create a `post-install.sh` file in your project root:
+```bash
+#!/bin/bash
+# Example: Configure wallpapers
+
+# Color definitions (recommended for consistency)
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m' 
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${GREEN}🖼️ Configuring personal wallpapers...${NC}"
+
+# Apply wallpapers if swww daemon is running
+if pgrep -x "swww-daemon" > /dev/null; then
+    echo -e "${BLUE}   Applying wallpapers...${NC}"
+    
+    # Apply per-monitor wallpapers
+    if hyprctl monitors | grep -q "DP-3"; then
+        swww img ~/.dotfiles/.wallpapers/monitor1.jpg --outputs DP-3
+    fi
+    
+    echo -e "${GREEN}✅ Wallpapers applied successfully!${NC}"
+else
+    echo -e "${YELLOW}⚠️ SWWW daemon not running. Skipping wallpaper configuration.${NC}"
+fi
+```
+
+### **Q: When do post-installation scripts run?**
+**A:** The script execution flow is:
+1. **System rebuild completes** successfully
+2. **Script detection** - Installer checks for `post-install.sh` existence
+3. **User permission** - Asks whether to execute the script
+4. **Safe execution** - Runs with error handling if approved
+5. **Cleanup prompt** - Always asks about system cleanup regardless
+
+### **Q: What can I automate with post-installation scripts?**
+**A:** Common use cases:
+- **🖼️ Wallpaper configuration** - Set monitor-specific wallpapers
+- **🔗 Symbolic links** - Create links to dotfiles or custom directories  
+- **📁 Directory setup** - Create user directories with proper permissions
+- **🔧 Theme application** - Apply custom themes or color schemes
+- **⚙️ Service management** - Restart specific user services (if needed)
+- **📦 Additional setup** - Any bash commands for personal environment
+
+### **Q: Are post-installation scripts safe?**
+**A:** Yes, with proper precautions:
+- **User permissions only** - Scripts run with your user account, not root
+- **Error handling** - The installer handles script failures gracefully  
+- **Non-blocking** - Script errors don't prevent system cleanup
+- **Optional execution** - You're always asked before running
+- **Review recommended** - Always review script contents before execution
+
+### **Q: What happens if my post-installation script fails?**
+**A:** The system handles failures gracefully:
+- **Error reporting** - Shows clear error messages
+- **Continues normally** - System cleanup prompt still appears
+- **No system damage** - User-level failures don't affect system
+- **Debugging** - Check script syntax and dependencies
+
+### **Q: Can I disable the post-installation script prompt?**
+**A:** The prompt only appears if `post-install.sh` exists. To disable:
+- **Remove the file** - Delete or rename `post-install.sh`
+- **Move elsewhere** - Keep script in a different location
+- **Answer 'No'** - Simply decline when prompted (no permanent change)
+
+### **Q: How do I test my post-installation script?**
+**A:** Testing recommendations:
+```bash
+# Make script executable
+chmod +x post-install.sh
+
+# Test syntax
+bash -n post-install.sh
+
+# Dry run in test environment
+bash post-install.sh
+
+# Test with different conditions (e.g., daemon not running)
+# Check error handling and output formatting
+```
 
 ## 🔧 Troubleshooting
 

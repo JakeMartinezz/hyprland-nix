@@ -70,7 +70,8 @@ nixos/
 ├── ⚙️ configuration.nix           # Configuração principal do sistema
 ├── 🏠 home.nix                    # Configuração principal do Home Manager
 ├── 🚀 install.sh                  # Instalador inteligente e interativo
-└── 📋 preset.conf                 # Configuração salva (gerado automaticamente)
+├── 📋 preset.conf                 # Configuração salva (gerado automaticamente)
+└── 🔧 post-install.sh             # Script de pós-instalação personalizável (opcional)
 ```
 
 ## 🎯 Como as Camadas Interagem
@@ -309,6 +310,7 @@ O instalador fornece uma experiência de configuração interativa abrangente:
 3. **Configuração de Discos**: Detecte e configure dispositivos de armazenamento adicionais
 4. **Visualização da Configuração**: Revise a configuração completa antes da instalação
 5. **Implantação Segura**: Faça backup da configuração existente (opcional) e implante a nova configuração
+6. **Automação Pós-Instalação**: Execução opcional de scripts personalizados definidos pelo usuário
 
 #### **📁 Exemplo do Sistema de Presets**
 
@@ -431,5 +433,95 @@ Deseja usar esta configuração salva? (Y/n):
 - **Reuso Instantâneo**: Pula todo processo de configuração com presets salvos
 - **Presets Portáveis**: Salvos no diretório do script (`preset.conf`)
 - **Exibição Detalhada**: Mostra data de criação e configurações completas dos discos
+
+## 🔧 Scripts de Pós-Instalação
+
+A configuração inclui um sistema flexível de scripts de pós-instalação que permite aos usuários automatizar tarefas personalizadas após rebuilds bem-sucedidos do sistema.
+
+### **📋 Como Funciona**
+
+Após a conclusão bem-sucedida do rebuild do sistema, o instalador automaticamente:
+
+1. **🔍 Detecta o Script**: Verifica se existe `post-install.sh` na raiz do projeto
+2. **👤 Permissão do Usuário**: Pergunta ao usuário se deseja executar o script
+3. **⚡ Execução Segura**: Executa o script com tratamento adequado de erros
+4. **🧹 Prompt de Limpeza**: Sempre pergunta sobre limpeza do sistema independentemente da execução do script
+
+### **💡 Criando Seu Script de Pós-Instalação**
+
+Crie um arquivo `post-install.sh` na raiz do projeto com sua automação personalizada:
+
+```bash
+#!/bin/bash
+# Exemplo post-install.sh - Configurar wallpapers
+
+# Definições de cores para saída
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # Sem Cor
+
+echo -e "${GREEN}🖼️  Configurando wallpapers personalizados...${NC}"
+
+# Aplicar wallpapers se o daemon swww estiver executando
+if pgrep -x "swww-daemon" > /dev/null; then
+    echo -e "${BLUE}   Aplicando wallpapers...${NC}"
+    
+    # Aplicar wallpaper para cada monitor conectado
+    if hyprctl monitors | grep -q "DP-3"; then
+        swww img ~/.dotfiles/.wallpapers/Kiki.jpg --outputs DP-3 --transition-type wipe --transition-duration 1
+    fi
+    
+    if hyprctl monitors | grep -q "DP-4"; then
+        swww img ~/.dotfiles/.wallpapers/Glass_Makima.jpg --outputs DP-4 --transition-type wipe --transition-duration 1
+    fi
+    
+    if hyprctl monitors | grep -q "eDP-1"; then
+        swww img ~/.dotfiles/.wallpapers/a_girl_with_short_brown_hair_and_white_shirt.jpg --outputs eDP-1 --transition-type wipe --transition-duration 1
+    fi
+    
+    echo -e "${GREEN}✅ Wallpapers aplicados com sucesso!${NC}"
+else
+    echo -e "${YELLOW}⚠️  Daemon SWWW não está executando. Ignorando configuração de wallpapers.${NC}"
+fi
+
+echo -e "${GREEN}🎉 Configuração pós-instalação concluída!${NC}"
+```
+
+### **🎯 Casos de Uso Comuns**
+
+- **🖼️ Configuração de Wallpapers**: Definir wallpapers específicos por monitor usando swww
+- **⚙️ Reinicialização de Serviços**: Reiniciar serviços específicos do usuário (AGS, eww, etc.)
+- **🔗 Links Simbólicos**: Criar links simbólicos personalizados para dotfiles
+- **📁 Configuração de Diretórios**: Criar diretórios do usuário e definir permissões
+- **🔧 Aplicação de Temas**: Aplicar temas personalizados ou configurações
+- **📦 Instalação de Pacotes Adicionais**: Instalar pacotes específicos do usuário
+
+### **🛡️ Fluxo de Execução do Script**
+
+```bash
+🔄 Rebuild do sistema concluído com sucesso
+    ↓
+🔍 Verificar existência do post-install.sh
+    ↓
+📋 [SE ENCONTRADO] Exibir mensagem de detecção do script
+    ↓
+👤 Perguntar ao usuário: "Executar script de pós-instalação? (Y/n)"
+    ↓
+⚡ [SE SIM] Executar script com tratamento de erros
+    ↓ 
+✅ Exibir resultados da execução
+    ↓
+🧹 SEMPRE perguntar sobre limpeza do sistema (coleta de lixo)
+```
+
+### **⚠️ Notas Importantes**
+
+- **🔒 Segurança**: Scripts executam com permissões do usuário, revisar conteúdo antes da execução
+- **📝 Executável**: O instalador automaticamente torna os scripts executáveis (`chmod +x`)
+- **🔄 Não-bloqueante**: Falhas do script não impedem prompts de limpeza
+- **🗂️ Opcional**: O sistema funciona normalmente sem scripts de pós-instalação
+- **🎨 Formatação**: Use códigos de cor para melhor consistência da experiência do usuário
 
 Esta arquitetura foi projetada para ser **mantível**, **escalável** e **performática**, seguindo as melhores práticas da comunidade NixOS enquanto adiciona inovações específicas para um setup desktop otimizado.

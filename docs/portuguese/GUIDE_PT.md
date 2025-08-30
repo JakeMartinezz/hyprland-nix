@@ -14,8 +14,9 @@
 4. [Sistema de Feature Flags](#-sistema-de-feature-flags)
 5. [Pacotes Instalados](#-pacotes-instalados)
 6. [Exemplos de Configuração](#-exemplos-de-configuração)
-7. [Comandos Essenciais](#-comandos-essenciais)
-8. [Customização Avançada](#-customização-avançada)
+7. [Scripts de Pós-Instalação](#-scripts-de-pós-instalação)
+8. [Comandos Essenciais](#-comandos-essenciais)
+9. [Customização Avançada](#-customização-avançada)
 
 ## 🚀 Instalação
 
@@ -166,6 +167,12 @@ Usar esta configuração? (Y/n):
    - Cópia seletiva de arquivos para `/etc/nixos`
    - Geração de arquivos de configuração com configurações do usuário
    - Opção de rebuild pós-instalação
+
+6. **🔧 Automação Pós-Instalação**
+   - Execução opcional de scripts definidos pelo usuário
+   - Detecção automática de `post-install.sh` na raiz do projeto
+   - Permissão do usuário necessária para execução de scripts
+   - Tratamento seguro de erros e integração com limpeza
 
 ### **🔧 Opções Avançadas de Instalação**
 
@@ -595,6 +602,197 @@ nixos/
 }
 ```
 **Resultado**: Servidor com SSH, VMs, containers Docker, sem GUI, limpeza automática.
+
+## 🔧 Scripts de Pós-Instalação
+
+A configuração inclui um sistema flexível de scripts de pós-instalação que permite aos usuários automatizar tarefas personalizadas após rebuilds bem-sucedidos do sistema.
+
+### **📋 O que são Scripts de Pós-Instalação?**
+
+Scripts de pós-instalação são scripts bash personalizáveis pelo usuário que executam automaticamente após a conclusão bem-sucedida do rebuild do sistema. Eles permitem:
+
+- **🖼️ Configurar wallpapers** - Definir wallpapers específicos por monitor usando swww
+- **🔗 Criar links simbólicos** - Vincular dotfiles ou configurações personalizadas  
+- **📁 Configurar diretórios** - Criar diretórios de usuário com permissões adequadas
+- **🔧 Aplicar temas** - Configurar temas personalizados ou esquemas de cores
+- **⚙️ Reiniciar serviços** - Reiniciar serviços específicos do usuário se necessário
+- **📦 Configuração adicional** - Quaisquer comandos bash para personalizar seu ambiente
+
+### **💡 Criando Seu Script de Pós-Instalação**
+
+Crie um arquivo `post-install.sh` na raiz do seu projeto (`/home/usuario/nixos/post-install.sh`):
+
+```bash
+#!/bin/bash
+# Exemplo post-install.sh - Configurar wallpapers
+
+# Definições de cores para saída consistente
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # Sem Cor
+
+echo -e "${GREEN}🖼️ Configurando wallpapers personalizados...${NC}"
+
+# Aplicar wallpapers se o daemon swww estiver executando
+if pgrep -x "swww-daemon" > /dev/null; then
+    echo -e "${BLUE}   Aplicando wallpapers...${NC}"
+    
+    # Aplicar wallpaper para cada monitor conectado
+    if hyprctl monitors | grep -q "DP-3"; then
+        swww img ~/.dotfiles/.wallpapers/Kiki.jpg \
+            --outputs DP-3 \
+            --transition-type wipe \
+            --transition-duration 1
+    fi
+    
+    if hyprctl monitors | grep -q "DP-4"; then
+        swww img ~/.dotfiles/.wallpapers/Glass_Makima.jpg \
+            --outputs DP-4 \
+            --transition-type wipe \
+            --transition-duration 1
+    fi
+    
+    if hyprctl monitors | grep -q "eDP-1"; then
+        swww img ~/.dotfiles/.wallpapers/laptop_wallpaper.jpg \
+            --outputs eDP-1 \
+            --transition-type wipe \
+            --transition-duration 1
+    fi
+    
+    echo -e "${GREEN}✅ Wallpapers aplicados com sucesso!${NC}"
+else
+    echo -e "${YELLOW}⚠️ Daemon SWWW não está executando. Pulando configuração de wallpapers.${NC}"
+fi
+
+echo -e "${GREEN}🎉 Configuração pós-instalação concluída!${NC}"
+```
+
+### **🔄 Fluxo de Execução do Script**
+
+```mermaid
+graph TD
+    A[Rebuild do Sistema Concluído] --> B{post-install.sh existe?}
+    B -->|Sim| C[Exibir Mensagem de Detecção do Script]
+    B -->|Não| F[Perguntar Sobre Limpeza do Sistema]
+    C --> D[Pedir Permissão do Usuário]
+    D -->|Sim| E[Executar Script com Segurança]
+    D -->|Não| G[Pular Execução do Script]
+    E --> H[Exibir Resultados]
+    G --> H
+    H --> F[Perguntar Sobre Limpeza do Sistema]
+    F --> I[Finalizar Processo]
+```
+
+### **🛡️ Recursos de Segurança**
+
+- **Apenas Permissões de Usuário**: Scripts executam com sua conta de usuário, não root
+- **Tratamento de Erros**: O instalador lida com falhas de script graciosamente
+- **Não-bloqueante**: Erros de script não impedem limpeza do sistema
+- **Execução Opcional**: Você sempre é perguntado antes da execução
+- **Auto-executável**: O instalador automaticamente torna scripts executáveis
+
+### **🎯 Casos de Uso Comuns**
+
+#### **1. Configuração de Wallpaper Multi-Monitor**
+```bash
+# Detectar e configurar wallpapers por monitor
+for monitor in $(hyprctl monitors -j | jq -r '.[] | .name'); do
+    case "$monitor" in
+        "DP-3") swww img ~/.wallpapers/principal.jpg --outputs $monitor ;;
+        "DP-4") swww img ~/.wallpapers/secundario.jpg --outputs $monitor ;;
+        "eDP-1") swww img ~/.wallpapers/laptop.jpg --outputs $monitor ;;
+    esac
+done
+```
+
+#### **2. Sincronização de Dotfiles**
+```bash
+# Atualizar e aplicar dotfiles
+cd ~/.dotfiles
+git pull origin main
+stow zsh git nvim
+```
+
+#### **3. Configuração de Diretórios Personalizados**
+```bash
+# Criar diretórios de usuário com permissões adequadas
+mkdir -p ~/Projetos/{pessoal,trabalho,opensource}
+mkdir -p ~/Screenshots ~/Downloads/Software
+chmod 755 ~/Projetos/*
+```
+
+#### **4. Configuração de Ambiente de Desenvolvimento**
+```bash
+# Inicializar ferramentas de desenvolvimento
+if command -v npm >/dev/null 2>&1; then
+    npm install -g yarn pnpm typescript
+fi
+
+# Configurar repositórios Git
+cd ~/Projetos
+git clone https://github.com/usuario/dotfiles.git
+```
+
+### **⚠️ Melhores Práticas**
+
+1. **Tratamento de Erros**: Sempre verificar se comandos/daemons estão disponíveis
+   ```bash
+   if command -v swww >/dev/null 2>&1; then
+       # comandos swww aqui
+   else
+       echo "SWWW não disponível, pulando configuração de wallpaper"
+   fi
+   ```
+
+2. **Execução Condicional**: Verificar pré-requisitos antes da execução
+   ```bash
+   if pgrep -x "hyprland" > /dev/null; then
+       # comandos específicos do Hyprland
+   fi
+   ```
+
+3. **Feedback ao Usuário**: Fornecer mensagens de status claras com cores
+   ```bash
+   echo -e "${GREEN}✅ Tarefa concluída com sucesso${NC}"
+   echo -e "${YELLOW}⚠️ Aviso: Tarefa opcional pulada${NC}"
+   echo -e "${RED}❌ Erro: Tarefa falhou${NC}"
+   ```
+
+4. **Testar Antes de Implementar**: Sempre testar scripts em ambiente seguro
+   ```bash
+   # Testar sintaxe do script
+   bash -n post-install.sh
+   
+   # Testar execução em ambiente isolado
+   bash post-install.sh
+   ```
+
+### **🔧 Gerenciamento de Scripts**
+
+#### **Habilitar/Desabilitar Scripts**
+- **Habilitar**: Criar `post-install.sh` na raiz do projeto
+- **Desabilitar**: Remover, renomear ou mover o arquivo para outro lugar
+- **Desabilitar temporariamente**: Responder "Não" quando perguntado (por execução)
+
+#### **Testando Scripts**
+```bash
+# Tornar executável
+chmod +x post-install.sh
+
+# Testar apenas sintaxe
+bash -n post-install.sh
+
+# Executar no ambiente atual
+bash post-install.sh
+```
+
+#### **Depurando Problemas**
+- Verificar permissões do script com `ls -la post-install.sh`
+- Verificar sintaxe do script com `bash -n post-install.sh`
+- Testar comandos individuais no seu shell
+- Revisar saída do script para mensagens de erro
 
 ## ⚡ Comandos Essenciais
 

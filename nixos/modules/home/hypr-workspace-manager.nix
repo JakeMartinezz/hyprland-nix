@@ -31,6 +31,10 @@ let
               nmcli radio wifi on 2>/dev/null || true
               hyprctl dispatch workspace 1 2>/dev/null || true
               
+              # Remover keybinds do modo docked primeiro
+              hyprctl keyword unbind , Page_Down 2>/dev/null || true
+              hyprctl keyword unbind SHIFT, Page_Down 2>/dev/null || true
+              
               # Configurar keybind Print para screenshot em modo laptop
               hyprctl keyword bind , Print, exec, "ags -r \"recorder.screenshot(true)\"" 2>/dev/null || true
               hyprctl keyword bind SHIFT, Print, exec, "ags -r \"recorder.screenshot()\"" 2>/dev/null || true
@@ -57,6 +61,10 @@ let
               # Docked mode - desativar WiFi, iniciar serviços dock
               echo "Docked mode detected - disabling WiFi, starting dock services..."
               nmcli radio wifi off 2>/dev/null || true
+              
+              # Remover keybinds do modo laptop primeiro
+              hyprctl keyword unbind , Print 2>/dev/null || true
+              hyprctl keyword unbind SHIFT, Print 2>/dev/null || true
               
               # Configurar keybind Page_Down para screenshot em modo docked
               hyprctl keyword bind , Page_Down, exec, "ags -r \"recorder.screenshot(true)\"" 2>/dev/null || true

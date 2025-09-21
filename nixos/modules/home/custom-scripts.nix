@@ -134,7 +134,6 @@ let
               
               if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le $((''${#wallpapers[@]} + 1)) ]; then
                   if [ "$choice" -eq $((''${#wallpapers[@]} + 1)) ]; then
-                      echo "Pulando monitor $monitor"
                       return 1
                   else
                       SELECTED_WALLPAPER="''${wallpapers[$((choice - 1))]}"
@@ -210,14 +209,12 @@ let
           local applied_count=0
           
           for monitor in "''${monitors[@]}"; do
-              select_wallpaper "$monitor" "''${wallpapers[@]}"
-              selection_result=$?
-              if [ $selection_result -eq 0 ]; then
-                  apply_wallpaper "$monitor" "$SELECTED_WALLPAPER"
-                  local apply_result=$?
-                  if [ $apply_result -eq 0 ]; then
+              if select_wallpaper "$monitor" "''${wallpapers[@]}"; then
+                  if apply_wallpaper "$monitor" "$SELECTED_WALLPAPER"; then
                       applied_count=$((applied_count + 1))
                   fi
+              else
+                  echo "Monitor $monitor foi pulado"
               fi
               echo
           done

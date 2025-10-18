@@ -112,32 +112,7 @@ with lib;
       kanshi-ags-restart
     ];
     
-    # Configurar kanshi para apenas reiniciar AGS
-    xdg.configFile."kanshi/config".text = lib.mkAfter ''
-# Configuração Kanshi para gerenciamento de monitores
-# Apenas reinicia AGS quando configuração de monitores muda
-
-# Perfil apenas notebook (configuração atual)
-profile laptop_only {
-    output "eDP-1" mode 1920x1080@165.00Hz position 0,0 scale 1.0
-    exec ${kanshi-ags-restart}/bin/kanshi-ags-restart
-}
-
-# Perfil dock - Cenário 1: DP-3=AOC, DP-4=Synaptics
-profile docked_dp3_aoc {
-    output "DP-3" mode 1920x1080@74.97Hz position 0,0 scale 1.0
-    output "DP-4" mode 1920x1080@60.0Hz position 1920,-585 scale 1.0 transform 270
-    output "eDP-1" mode 1920x1080@60.01Hz position 3000,115 scale 1.0
-    exec ${kanshi-ags-restart}/bin/kanshi-ags-restart
-}
-
-# Perfil dock - Cenário 2: DP-4=AOC, DP-3=Synaptics (se trocar)
-profile docked_dp4_aoc {
-    output "DP-4" mode 1920x1080@74.97Hz position 0,0 scale 1.0
-    output "DP-3" mode 1920x1080@60.0Hz position 1920,-585 scale 1.0 transform 270
-    output "eDP-1" mode 1920x1080@60.01Hz position 3000,115 scale 1.0
-    exec ${kanshi-ags-restart}/bin/kanshi-ags-restart
-}
-    '';
+    # Criar link simbólico para configuração editável do kanshi
+    xdg.configFile."kanshi/config".source = ../../lib/kanshi.conf;
   };
 }

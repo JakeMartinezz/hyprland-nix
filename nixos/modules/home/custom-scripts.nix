@@ -181,7 +181,7 @@ let
           
           if ! pgrep -x swww-daemon > /dev/null; then
               echo "Iniciando swww daemon..."
-              swww init
+              swww-daemon &> /dev/null &
               sleep 2
           fi
           

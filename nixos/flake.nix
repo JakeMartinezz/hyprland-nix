@@ -61,7 +61,7 @@
         
         # Zen browser overlay
         (final: prev: {
-          zen = zen-browser.packages.${prev.system}.default;
+          zen = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
         })
         
         # AGS overlay for desktop

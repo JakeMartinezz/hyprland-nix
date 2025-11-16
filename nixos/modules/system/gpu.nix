@@ -27,13 +27,13 @@ in
       hardware.graphics.extraPackages = with pkgs; [
         libva-utils
         libvdpau-va-gl
-        vaapiVdpau
+        libva-vdpau-driver
       ];
       
       hardware.graphics.extraPackages32 = with pkgs.pkgsi686Linux; [
         libva
         libvdpau-va-gl
-        vaapiVdpau
+        libva-vdpau-driver
       ];
       
       environment.sessionVariables = gpuFeatures.amd.optimizations // {
@@ -82,7 +82,7 @@ in
         nvidia-vaapi-driver
         libvdpau
         libva-vdpau-driver
-        vaapiVdpau
+        libva-vdpau-driver
         
         # NVIDIA específico
         nvidia-system-monitor-qt # GUI monitor
@@ -92,7 +92,7 @@ in
         nvidia-vaapi-driver
         libvdpau
         libva-vdpau-driver
-        vaapiVdpau
+        libva-vdpau-driver
       ];
       
       environment.sessionVariables = gpuFeatures.nvidia.optimizations // {

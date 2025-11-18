@@ -64,10 +64,24 @@
           zen = zen-browser.packages.${prev.stdenv.hostPlatform.system}.default;
         })
         
-        # AGS overlay for desktop
+        # AGS v1 com patch para GJS moderno
         (final: prev: {
           ags_1 = prev.ags_1.overrideAttrs (old: {
             buildInputs = old.buildInputs ++ [ prev.libdbusmenu-gtk3 ];
+
+            # Patch para remover uso de Repository.prepend_search_path (removido no GJS 1.78+)
+            postFixup = (old.postFixup or "") + ''
+              # Remove linhas que usam funções removidas do GJS
+              if [ -f $out/bin/.ags-wrapped ]; then
+                sed -i '/Repository\.prepend_search_path/d' $out/bin/.ags-wrapped
+                sed -i '/Repository\.prepend_library_path/d' $out/bin/.ags-wrapped
+              fi
+
+              # Wrapper que adiciona GI_TYPELIB_PATH e LD_LIBRARY_PATH
+              wrapProgram $out/bin/ags \
+                --prefix GI_TYPELIB_PATH : "$out/lib" \
+                --prefix LD_LIBRARY_PATH : "$out/lib"
+            '';
           });
         })
       ];

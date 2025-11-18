@@ -4,9 +4,9 @@
 ![Hyprland Badge](https://img.shields.io/badge/Hyprland-0d1117?style=for-the-badge&logo=wayland&logoColor=white)
 ![Shell Script](https://img.shields.io/badge/Shell_Script-0d1117?style=for-the-badge&logo=gnu-bash&logoColor=white)
 
-![Demo](docs/demo.png)
-
 > Jake's Modular NixOS Configuration with Hyprland
+
+**📚 [Complete Documentation](https://github.com/JakeMartinezz/hyprland-nix/wiki) • 🇺🇸 [English Guide](https://github.com/JakeMartinezz/hyprland-nix/wiki/Installation-and-Configuration-Guide-(English)) • 🇧🇷 [Guia em Português](https://github.com/JakeMartinezz/hyprland-nix/wiki/Guia-de-Instalação-e-Configuração-(Português))**
 
 ## 🏗️ Architecture & Design
 
@@ -285,20 +285,21 @@ clean   → GC + optimization + backup to ${backupPath}
 
 ## 📚 Documentation
 
+All comprehensive documentation is available in our [GitHub Wiki](https://github.com/JakeMartinezz/hyprland-nix/wiki):
+
 ### **📖 Complete Guides**
-- **[Configuration Guide](docs/english/GUIDE_EN.md)**: Detailed guide with examples and customization instructions
-- **[Guia de Configuração](docs/portuguese/GUIDE_PT.md)**: Guia detalhado com exemplos e instruções de customização
-- **[Portuguese README](docs/portuguese/README.md)**: Documentação completa em português
+- **[Configuration Guide (English)](https://github.com/JakeMartinezz/hyprland-nix/wiki/Installation-and-Configuration-Guide-(English))**: Detailed guide with examples and customization instructions
+- **[Guia de Configuração (Português)](https://github.com/JakeMartinezz/hyprland-nix/wiki/Guia-de-Instalação-e-Configuração-(Português))**: Guia detalhado com exemplos e instruções de customização
 
 ### **🔧 Technical Documentation**
-- **[Coding Standards](docs/english/CODING_STANDARDS.md)**: Development guidelines and best practices
-- **[Commit Standards](docs/english/COMMIT_STANDARDS.md)**: Conventional commits guide and patterns
+- **[Architecture & Design](https://github.com/JakeMartinezz/hyprland-nix/wiki/Architecture-and-Design)**: Complete architecture overview and design philosophy
+- **[Coding Standards](https://github.com/JakeMartinezz/hyprland-nix/wiki/Coding-Standards)**: Development guidelines and best practices
 
 ### **❓ Help & Support**
-- **[FAQ](docs/english/FAQ_EN.md)**: Frequently asked questions and answers
-- **[Troubleshooting](docs/english/TROUBLESHOOTING_EN.md)**: Common issues and solutions
-- **[FAQ Português](docs/portuguese/FAQ_PT.md)**: Perguntas frequentes e respostas
-- **[Solução de Problemas](docs/portuguese/TROUBLESHOOTING_PT.md)**: Problemas comuns e soluções
+- **[FAQ (English)](https://github.com/JakeMartinezz/hyprland-nix/wiki/FAQ-(English))**: Frequently asked questions and answers
+- **[FAQ (Português)](https://github.com/JakeMartinezz/hyprland-nix/wiki/FAQ-(Português))**: Perguntas frequentes e respostas
+- **[Troubleshooting (English)](https://github.com/JakeMartinezz/hyprland-nix/wiki/Troubleshooting-Guide-(English))**: Common issues and solutions
+- **[Solução de Problemas (Português)](https://github.com/JakeMartinezz/hyprland-nix/wiki/Guia-de-Solução-de-Problemas-(Português))**: Problemas comuns e soluções
 
 
 ## 🚀 Quick Start

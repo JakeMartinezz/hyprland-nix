@@ -28,7 +28,7 @@ nixos/
 │   └── variables.nix              # Single source of truth - centralized feature flags
 │
 ├── 📚 lib/                        # REUSABLE LIBRARIES & COMPONENTS
-│   └── fauxmo.nix                 # Alexa integration (IoT)
+│   └── kanshi.conf                # Kanshi monitor configuration
 │
 ├── 🧩 modules/                    # MAIN MODULAR LAYER
 │   ├── 🏠 home/                   # Home Manager modules (user)
@@ -57,7 +57,7 @@ nixos/
 │       ├── auto-update.nix        # Automatic system updates
 │       ├── bluetooth.nix          # Bluetooth configuration
 │       ├── boot.nix               # Boot configuration (XanMod, Plymouth)
-│       ├── conditional-services.nix # Conditional services (VirtualBox, Fauxmo, WoL)
+│       ├── conditional-services.nix # Conditional services (VirtualBox, WoL, Polkit)
 │       ├── docker.nix             # Docker containerization with Portainer
 │       ├── filesystems.nix        # Centralized filesystem configuration
 │       ├── fonts.nix              # System fonts
@@ -113,10 +113,6 @@ nixos/
     };
     
     services = {
-      fauxmo = {
-        enable = true;
-        ports = [ 52002 ]; # Firewall configuration
-      };
       docker = {
         enable = true; # Docker containerization
         portainer = {
@@ -177,7 +173,7 @@ home/development.nix: vscode, claude-code, yarn   # Dev-specific tools
        │
 4. modules/system/*.nix
    ├── gpu.nix: Conditional AMD/NVIDIA configuration
-   ├── conditional-services.nix: VirtualBox, Fauxmo, WoL, Polkit GNOME
+   ├── conditional-services.nix: VirtualBox, WoL, Polkit GNOME
    ├── filesystems.nix: Centralized disk and mounting
    └── Other system modules
 ```
@@ -275,14 +271,6 @@ clean   → GC + optimization + backup to ${backupPath}
 # Allows graphical authentication for privileged operations
 ```
 
-### **IoT Integration**
-```nix
-# lib/fauxmo.nix - Alexa-NixOS Bridge
-# Enabled via features.services.fauxmo.enable = true
-# Firewall configured automatically via features.services.fauxmo.ports
-# IP detected automatically at service startup
-```
-
 ## 📚 Documentation
 
 All comprehensive documentation is available in our [GitHub Wiki](https://github.com/JakeMartinezz/hyprland-nix/wiki):
@@ -351,7 +339,6 @@ Configuration Details:
   Development: true
   Media: true
   VirtualBox: true
-  Fauxmo/Alexa: true
   Kanshi (Display Management): true
   Docker: true
   Portainer: true
@@ -373,7 +360,6 @@ Use this configuration? (Y/n):
 features = {
   gpu.type = "amd";        # or "nvidia"/"intel"
   laptop.enable = false;   # true for laptop
-  services.fauxmo.enable = true; # Alexa integration
 };
 
 # Apply configuration
@@ -424,7 +410,6 @@ Saved configuration found:
   Development: true
   Media: true
   VirtualBox: true
-  Fauxmo/Alexa: true
   Kanshi (Display Management): true
   Rollback Generations: 2
   Auto Updates: true

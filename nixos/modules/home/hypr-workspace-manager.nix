@@ -51,11 +51,6 @@ let
                   pkill -f "ArchiSteamFarm" 2>/dev/null || true
               fi
               
-              # Parar Fauxmo (Alexa integration)
-              if systemctl is-active --quiet fauxmo 2>/dev/null; then
-                  echo "Stopping Fauxmo service..."
-                  sudo systemctl stop fauxmo 2>/dev/null || true
-              fi
               ;;
           3)
               # Docked mode - desativar WiFi, iniciar serviços dock
@@ -82,11 +77,6 @@ let
                   ArchiSteamFarm >/dev/null 2>&1 &
               fi
               
-              # Iniciar Fauxmo (Alexa integration) se não estiver rodando
-              if ! systemctl is-active --quiet fauxmo 2>/dev/null; then
-                  echo "Starting Fauxmo service..."
-                  sudo systemctl start fauxmo 2>/dev/null || true
-              fi
               ;;
           *)
               echo "Unknown monitor configuration: $monitor_count monitors"

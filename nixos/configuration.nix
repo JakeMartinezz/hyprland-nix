@@ -20,8 +20,7 @@ in
       ./modules/system/bluetooth.nix
     ] ++ lib.optionals vars.features.laptop.enable [
       ./modules/packages/system/laptop.nix
-    ] ++ lib.optionals (vars.features.services.virtualbox.enable || 
-                        vars.features.services.fauxmo.enable || 
+    ] ++ lib.optionals (vars.features.services.virtualbox.enable ||
                         vars.features.services.polkit_gnome.enable ||
                         vars.features.network.wakeOnLan.enable) [
       ./modules/system/conditional-services.nix

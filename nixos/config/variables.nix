@@ -75,12 +75,6 @@
     
     # Services and integrations
     services = {
-      # Fauxmo
-      fauxmo = {
-        enable = true;
-        ports = [ 52002 ]; # TCP ports to open for Fauxmo service
-      };
-      
       # VirtualBox
       virtualbox = {
         enable = true;

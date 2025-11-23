@@ -997,7 +997,6 @@ save_config_preset() {
     echo "media_enable=$media_enable" >> "$PRESET_FILE"
     echo "virtualbox_enable=$virtualbox_enable" >> "$PRESET_FILE"
     echo "polkit_enable=$polkit_enable" >> "$PRESET_FILE"
-    echo "fauxmo_enable=$fauxmo_enable" >> "$PRESET_FILE"
     echo "kanshi_enable=$kanshi_enable" >> "$PRESET_FILE"
     echo "docker_enable=$docker_enable" >> "$PRESET_FILE"
     echo "portainer_enable=$portainer_enable" >> "$PRESET_FILE"
@@ -1068,8 +1067,8 @@ validate_auto_update() {
 # Helper function to validate and fix boolean values
 validate_boolean_values() {
     local has_errors=false
-    local boolean_vars=("laptop_enable" "bluetooth_enable" "gaming_enable" "development_enable" "media_enable" "virtualbox_enable" "polkit_enable" "fauxmo_enable" "kanshi_enable" "docker_enable" "portainer_enable" "wake_on_lan_enable")
-    local boolean_messages=("$MSG_LAPTOP" "$MSG_BLUETOOTH" "$MSG_GAMING" "$MSG_DEVELOPMENT" "$MSG_MEDIA" "$MSG_VIRTUALBOX" "$MSG_POLKIT" "$MSG_FAUXMO" "$MSG_KANSHI" "$MSG_DOCKER" "$MSG_PORTAINER" "$MSG_WAKE_ON_LAN")
+    local boolean_vars=("laptop_enable" "bluetooth_enable" "gaming_enable" "development_enable" "media_enable" "virtualbox_enable" "polkit_enable" "kanshi_enable" "docker_enable" "portainer_enable" "wake_on_lan_enable")
+    local boolean_messages=("$MSG_LAPTOP" "$MSG_BLUETOOTH" "$MSG_GAMING" "$MSG_DEVELOPMENT" "$MSG_MEDIA" "$MSG_VIRTUALBOX" "$MSG_POLKIT" "$MSG_KANSHI" "$MSG_DOCKER" "$MSG_PORTAINER" "$MSG_WAKE_ON_LAN")
     
     for i in "${!boolean_vars[@]}"; do
         local var_name="${boolean_vars[$i]}"
@@ -1207,7 +1206,6 @@ show_basic_config() {
     echo -e "  ${YELLOW}Media:${NC} $media_enable"
     echo -e "  ${YELLOW}VirtualBox:${NC} $virtualbox_enable"
     echo -e "  ${YELLOW}Polkit GNOME:${NC} $polkit_enable"
-    echo -e "  ${YELLOW}Fauxmo/Alexa:${NC} $fauxmo_enable"
     echo -e "  ${YELLOW}Kanshi:${NC} $kanshi_enable"
     echo -e "  ${YELLOW}Wake on LAN:${NC} $wake_on_lan_enable"
     echo -e "  ${YELLOW}GTK Theme:${NC} $gtk_theme"
@@ -1526,7 +1524,6 @@ collect_config() {
     media_enable=$(ask_yes_no "$MSG_MEDIA")
     virtualbox_enable=$(ask_yes_no "$MSG_VIRTUALBOX")
     polkit_enable=$(ask_yes_no "$MSG_POLKIT" "y")
-    fauxmo_enable=$(ask_yes_no "$MSG_FAUXMO")
     kanshi_enable=$(ask_yes_no "$MSG_KANSHI" "y")
     wake_on_lan_enable=$(ask_yes_no "$MSG_WAKE_ON_LAN")
     
@@ -1625,7 +1622,6 @@ show_config_review() {
     echo -e "  ${YELLOW}Media:${NC} $media_enable"
     echo -e "  ${YELLOW}VirtualBox:${NC} $virtualbox_enable"
     echo -e "  ${YELLOW}Polkit GNOME:${NC} $polkit_enable"
-    echo -e "  ${YELLOW}Fauxmo/Alexa:${NC} $fauxmo_enable"
     echo -e "  ${YELLOW}Kanshi:${NC} $kanshi_enable"
     echo -e "  ${YELLOW}Docker:${NC} $docker_enable"
     if [[ "$docker_enable" == "true" ]]; then
@@ -1781,12 +1777,6 @@ cat > /tmp/variables.nix << EOF
     
     # Services and integrations
     services = {
-      # Fauxmo
-      fauxmo = {
-        enable = $fauxmo_enable;
-        ports = [ 52002 ]; # TCP ports to open for Fauxmo service
-      };
-      
       # VirtualBox
       virtualbox = {
         enable = $virtualbox_enable;

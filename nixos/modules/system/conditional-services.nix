@@ -10,36 +10,7 @@ let
 in
 
 {
-  # Fauxmo service (Alexa integration)
-  imports = lib.optional serviceFeatures.fauxmo.enable ../../lib/fauxmo.nix;
-  
   config = lib.mkMerge [
-    # Fauxmo firewall configuration and sudo permissions
-    (lib.mkIf serviceFeatures.fauxmo.enable {
-      networking.firewall.allowedTCPPorts = serviceFeatures.fauxmo.ports;
-      
-      # Allow user to control Fauxmo service without password (for monitor switching)
-      security.sudo.extraRules = [
-        {
-          users = [ vars.username ];
-          commands = [
-            {
-              command = "/run/current-system/sw/bin/systemctl start fauxmo";
-              options = [ "NOPASSWD" ];
-            }
-            {
-              command = "/run/current-system/sw/bin/systemctl stop fauxmo";
-              options = [ "NOPASSWD" ];
-            }
-            {
-              command = "/run/current-system/sw/bin/systemctl restart fauxmo";
-              options = [ "NOPASSWD" ];
-            }
-          ];
-        }
-      ];
-    })
-    
     # VirtualBox configuration - lazy loading
     (lib.mkIf serviceFeatures.virtualbox.enable {
       virtualisation.virtualbox.host.enable = true;

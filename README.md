@@ -3,6 +3,8 @@
 ![NixOS Badge](https://img.shields.io/badge/NixOS-0d1117?style=for-the-badge&logo=nixos&logoColor=white)
 ![Hyprland Badge](https://img.shields.io/badge/Hyprland-0d1117?style=for-the-badge&logo=wayland&logoColor=white)
 ![Shell Script](https://img.shields.io/badge/Shell_Script-0d1117?style=for-the-badge&logo=gnu-bash&logoColor=white)
+<img src="./docs/demo.png" alt="desktop" width="100%" />
+
 
 > Jake's Modular NixOS Configuration with Hyprland
 
